@@ -4,7 +4,7 @@ group: beta
 language: node_js
 cache:
   directories:
-    - $HOME/.npm
+  - "$HOME/.npm"
 install: case $TRAVIS_BRANCH in greenkeeper*) npm i;; *) npm ci;; esac;
 jobs:
   include:
@@ -26,3 +26,6 @@ jobs:
       on:
         repo: windingtree/wt-pricing-algorithms
         tags: true
+env:
+  global:
+    secure: yjqCUSBidsnuDAMyLybTzAcEpEOhnHZkIg3BNpZKCMhDUwE0k7lSwyy4sss7GreROxkLGMFkvy2JbgY/hplqRfV1AC4dIC155jS7riasvrkg9TIoJ3eMVj8zj5VLv8ZEmF6WLuFX8Z+pWOKYzyoRxrtNwkZ2lqb57bPBr8U74vrUWkUElaf6pMbnAsQaIgodvpWhSfmECBGtYrxLt6yzPD+rFuDFc3FJF1/qkvzEgnS2ierpvMyJ5Rm/xbDlIX4QgHHdMlkTg4CucNIm7iPhdG29W8LaolhY+SZYnVoEI1Xskxct/3CbjgJQ8YA+k42UFiCA8YfeRtCQiHKELybVCHcku4mXKGsUt3vL4MFG+B9e8LCHwqbmMNvjK8nrsMLfiAkRbxJCr2mWmUUP7zSHGT8p14l/uGV7xxinvqD3hjN7XasE/G5q9QEDX45QZa/t9W1vx/i+etDwnIzg+ed1FBcl64UtQLO58nwPwtr7CQWb6o5d3VYnXuDEyEUX+L+7MljXLu+E+bjYWhUQ5zPENkajnm7GwuDSaHxErcvRnXiytHHlbjZWSp1JpqK9XjysR540JOd0jwSZrMCLCSt29Z9sEihQoDTf423JUPx39lfxm/g9lAxNeMlx8VjBJJtOrXyeBb7a/4AC/rWgEy7j126hWdpuUB0ElliPGwQLs7k=
