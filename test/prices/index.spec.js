@@ -3,21 +3,15 @@ import currency from 'currency.js';
 import { computePrices, computeStayPrices, computeDailyPrice } from '../../src/prices';
 
 describe('prices.index', () => {
-  let guestData;
+  let guests;
+  let arrivalDateDayjs;
+  let departureDateDayjs;
   let hotel;
 
   beforeEach(() => {
-    guestData = {
-      arrival: '2018-01-03',
-      departure: '2018-01-05',
-      guests: [{ age: 18 }],
-      helpers: {
-        arrivalDateDayjs: dayjs('2018-01-03'),
-        departureDateDayjs: dayjs('2018-01-05'),
-        lengthOfStay: 2,
-        numberOfGuests: 1,
-      },
-    };
+    guests = [{ age: 18 }];
+    arrivalDateDayjs = dayjs('2018-01-03');
+    departureDateDayjs = dayjs('2018-01-05');
     hotel = {
       id: '0x933198455e38925bccb4bfe9fb59bac31d00b4d3',
       currency: 'CZK',
@@ -46,7 +40,7 @@ describe('prices.index', () => {
   describe('computePrices', () => {
     // TODO multiple currencies
     it('should return null price if no rate plan matches the room type', () => {
-      const result = computePrices(guestData, hotel);
+      const result = computePrices(arrivalDateDayjs, departureDateDayjs, guests, hotel);
       expect(result.find(e => e.id === 'rta')).toHaveProperty('price', undefined);
       expect(result.find(e => e.id === 'rta')).toHaveProperty('currency', hotel.currency);
     });
@@ -69,7 +63,7 @@ describe('prices.index', () => {
       };
 
       const result = computeStayPrices(
-        guestData,
+        arrivalDateDayjs, departureDateDayjs, guests,
         hotel.currency,
         Object.values(hotel.ratePlans),
       );
@@ -87,7 +81,7 @@ describe('prices.index', () => {
       };
 
       const result = computeStayPrices(
-        guestData,
+        arrivalDateDayjs, departureDateDayjs, guests,
         hotel.currency,
         Object.values(hotel.ratePlans),
       );
@@ -121,20 +115,9 @@ describe('prices.index', () => {
           to: '2018-10-10',
         },
       };
-      guestData = Object.assign({}, guestData, {
-        arrival: '2018-10-02',
-        departure: '2018-10-10',
-        guests: [{ age: 10 }, { age: 20 }, { age: 30 }],
-        helpers: {
-          arrivalDateDayjs: dayjs('2018-10-02'),
-          departureDateDayjs: dayjs('2018-10-10'),
-          lengthOfStay: 8,
-          numberOfGuests: 3,
-        },
-      });
 
       const result = computeStayPrices(
-        guestData,
+        dayjs('2018-10-02'), dayjs('2018-10-10'), [{ age: 10 }, { age: 20 }, { age: 30 }],
         hotel.currency,
         Object.values(hotel.ratePlans),
       );
@@ -166,20 +149,9 @@ describe('prices.index', () => {
         price: 73,
         roomTypeIds: ['rtb'],
       };
-      guestData = Object.assign({}, guestData, {
-        arrival: '2018-10-02',
-        departure: '2018-10-10',
-        guests: [{ age: 10 }, { age: 20 }, { age: 30 }],
-        helpers: {
-          arrivalDateDayjs: dayjs('2018-10-02'),
-          departureDateDayjs: dayjs('2018-10-10'),
-          lengthOfStay: 8,
-          numberOfGuests: 3,
-        },
-      });
 
       const result = computeStayPrices(
-        guestData,
+        dayjs('2018-10-02'), dayjs('2018-10-10'), [{ age: 10 }, { age: 20 }, { age: 30 }],
         hotel.currency,
         Object.values(hotel.ratePlans),
       );
@@ -219,17 +191,9 @@ describe('prices.index', () => {
           to: '2018-10-10',
         },
       };
-      guestData = Object.assign({}, guestData, {
-        arrival: '2018-10-02',
-        departure: '2018-10-10',
-        helpers: {
-          arrivalDateDayjs: dayjs('2018-10-02'),
-          departureDateDayjs: dayjs('2018-10-10'),
-          lengthOfStay: 8,
-        },
-      });
+
       const result = computeStayPrices(
-        guestData,
+        dayjs('2018-10-02'), dayjs('2018-10-10'), guests,
         hotel.currency,
         Object.values(hotel.ratePlans),
       );
@@ -276,19 +240,9 @@ describe('prices.index', () => {
         },
         currency: 'EUR',
       };
-      guestData = Object.assign({}, guestData, {
-        arrival: '2018-10-02',
-        departure: '2018-10-10',
-        helpers: {
-          arrivalDateDayjs: dayjs('2018-10-02'),
-          departureDateDayjs: dayjs('2018-10-10'),
-          lengthOfStay: 8,
-          numberOfGuests: 1,
-        },
-      });
 
       const result = computeStayPrices(
-        guestData,
+        dayjs('2018-10-02'), dayjs('2018-10-10'), guests,
         hotel.currency,
         Object.values(hotel.ratePlans),
       );
@@ -309,12 +263,12 @@ describe('prices.index', () => {
 
   describe('computeDailyPrice', () => {
     it('should return base price if rate plan has no modifiers', () => {
-      expect(computeDailyPrice({ helpers: { numberOfGuests: 1, lengthOfStay: 3 } }, '2018-09-12', { price: 10 }).format()).toBe(currency(10).format());
-      expect(computeDailyPrice({ helpers: { numberOfGuests: 13, lengthOfStay: 3 } }, '2018-09-12', { price: 10 }).format()).toBe(currency(130).format());
+      expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', { price: 10 }).format()).toBe(currency(10).format());
+      expect(computeDailyPrice((new Array(13)).map((i) => ({ age: 18 })), 3, '2018-09-12', { price: 10 }).format()).toBe(currency(130).format());
     });
 
     it('should pick the most pro-customer modifier (all positive)', () => {
-      expect(computeDailyPrice({ guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } }, '2018-09-12', {
+      expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
         price: 8,
         modifiers: [
           { adjustment: 25, conditions: {} },
@@ -324,7 +278,7 @@ describe('prices.index', () => {
     });
 
     it('should pick the most pro-customer modifier (all negative)', () => {
-      expect(computeDailyPrice({ guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } }, '2018-09-12', {
+      expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
         price: 8,
         modifiers: [
           { adjustment: -25, conditions: {} },
@@ -334,7 +288,7 @@ describe('prices.index', () => {
     });
 
     it('should pick the most pro-customer modifier (mixed)', () => {
-      expect(computeDailyPrice({ guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } }, '2018-09-12', {
+      expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
         price: 8,
         modifiers: [
           { adjustment: -25, conditions: {} },
@@ -347,7 +301,7 @@ describe('prices.index', () => {
 
     describe('modifier combinations', () => {
       it('should pick the modifier with the best price if multiple are applicable', () => {
-        expect(computeDailyPrice({ guests: [{ age: 18 }, { age: 16 }], helpers: { lengthOfStay: 3, numberOfGuests: 2 } }, '2018-09-12', {
+        expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
             { adjustment: -75, conditions: { minOccupants: 2 } },
@@ -357,7 +311,7 @@ describe('prices.index', () => {
       });
 
       it('should pick the guest-specific modifier if multiple are applicable', () => {
-        expect(computeDailyPrice({ guests: [{ age: 18 }, { age: 16 }], helpers: { lengthOfStay: 3, numberOfGuests: 2 } }, '2018-09-12', {
+        expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
           price: 10,
           modifiers: [
             { adjustment: -25, conditions: { minOccupants: 2 } },
@@ -368,7 +322,7 @@ describe('prices.index', () => {
       });
 
       it('combine maxAge + minOccupants', () => {
-        expect(computeDailyPrice({ guests: [{ age: 18 }, { age: 16 }], helpers: { lengthOfStay: 3, numberOfGuests: 2 } }, '2018-09-12', {
+        expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
           price: 10,
           modifiers: [
             { adjustment: -20, conditions: { minOccupants: 2, maxAge: 16 } },
@@ -378,7 +332,7 @@ describe('prices.index', () => {
       });
 
       it('combine maxAge + lengthOfStay', () => {
-        expect(computeDailyPrice({ guests: [{ age: 18 }, { age: 16 }], helpers: { lengthOfStay: 3, numberOfGuests: 2 } }, '2018-09-12', {
+        expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
           price: 10,
           modifiers: [
             { adjustment: -20, conditions: { lengthOfStay: 2, maxAge: 16 } },
@@ -388,7 +342,7 @@ describe('prices.index', () => {
       });
 
       it('combine maxAge + lengthOfStay + minOccupants', () => {
-        expect(computeDailyPrice({ guests: [{ age: 18 }, { age: 16 }], helpers: { lengthOfStay: 3, numberOfGuests: 2 } }, '2018-09-12', {
+        expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
           price: 10,
           modifiers: [
             { adjustment: -10, conditions: { lengthOfStay: 2, minOccupants: 2, maxAge: 16 } },
@@ -402,7 +356,7 @@ describe('prices.index', () => {
 
     describe('maxAge', () => {
       it('should apply modifier to some of the guests if they are under or on par with the limit', () => {
-        expect(computeDailyPrice({ guests: [{ age: 11 }, { age: 18 }, { age: 30 }], helpers: { lengthOfStay: 3, numberOfGuests: 3 } }, '2018-09-12', {
+        expect(computeDailyPrice([{ age: 11 }, { age: 18 }, { age: 30 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
             { adjustment: -25, conditions: { maxAge: 18 } },
@@ -411,7 +365,7 @@ describe('prices.index', () => {
       });
 
       it('should apply a fitting modifier to each guests', () => {
-        expect(computeDailyPrice({ guests: [{ age: 25 }, { age: 18 }, { age: 16 }], helpers: { lengthOfStay: 3, numberOfGuests: 3 } }, '2018-09-12', {
+        expect(computeDailyPrice([{ age: 25 }, { age: 18 }, { age: 16 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
             { adjustment: -10, conditions: { maxAge: 25 } },

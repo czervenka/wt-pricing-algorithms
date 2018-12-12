@@ -6,21 +6,21 @@ import {
   selectApplicableRatePlans,
 } from './rate-plans';
 
-export const computeDailyPrice = (guestData, dateDayjs, ratePlan) => {
+export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan) => {
   const applicableModifiers = selectApplicableModifiers(
-    ratePlan.modifiers, dateDayjs, guestData.helpers.lengthOfStay, guestData.helpers.numberOfGuests
+    ratePlan.modifiers, dateDayjs, lengthOfStay, guests.length
   );
   if (!applicableModifiers.length) {
-    return currency(ratePlan.price).multiply(guestData.helpers.numberOfGuests);
+    return currency(ratePlan.price).multiply(guests.length);
   }
 
   const guestPrices = [];
   let selectedModifier;
   let adjustment;
-  for (let i = 0; i < guestData.guests.length; i += 1) {
+  for (let i = 0; i < guests.length; i += 1) {
     adjustment = 0;
     // Pick the best modifier for each guest and adjust the price
-    selectedModifier = selectBestGuestModifier(applicableModifiers, guestData.guests[i].age);
+    selectedModifier = selectBestGuestModifier(applicableModifiers, guests[i].age);
     if (selectedModifier) {
       adjustment = (selectedModifier.adjustment / 100) * ratePlan.price;
     }
@@ -29,11 +29,12 @@ export const computeDailyPrice = (guestData, dateDayjs, ratePlan) => {
   return guestPrices.reduce((a, b) => a.add(currency(b)), currency(0));
 };
 
-export const computeStayPrices = (guestData, hotelCurrency, applicableRatePlans) => {
+export const computeStayPrices = (arrivalDateDayjs, departureDateDayjs, guests, hotelCurrency, applicableRatePlans) => {
   const dailyPrices = {};
-  let currentDate = dayjs(guestData.helpers.arrivalDateDayjs);
+  const lengthOfStay = Math.abs(arrivalDateDayjs.diff(departureDateDayjs, 'days'));
+  let currentDate = dayjs(arrivalDateDayjs);
   // Find an appropriate rate plan for every day
-  for (let i = 0; i < guestData.helpers.lengthOfStay; i += 1) {
+  for (let i = 0; i < lengthOfStay; i += 1) {
     let currentRatePlan;
     let currentCurrency;
     const bestDailyPrice = {};
@@ -56,7 +57,7 @@ export const computeStayPrices = (guestData, hotelCurrency, applicableRatePlans)
       // Deal with a rate plan ending sometimes during the stay
       if (currentDate >= availableForTravelFrom && currentDate <= availableForTravelTo) {
         const currentDailyPrice = computeDailyPrice(
-          guestData, currentDate, currentRatePlan,
+          guests, lengthOfStay, currentDate, currentRatePlan,
         );
 
         if (!bestDailyPrice[currentCurrency] ||
@@ -75,7 +76,7 @@ export const computeStayPrices = (guestData, hotelCurrency, applicableRatePlans)
   // Filter out currencies that do not cover the whole stay range
   const allCurrencies = Object.keys(dailyPrices);
   for (let i = 0; i < allCurrencies.length; i += 1) {
-    if (dailyPrices[allCurrencies[i]].length < guestData.helpers.lengthOfStay ||
+    if (dailyPrices[allCurrencies[i]].length < lengthOfStay ||
       dailyPrices[allCurrencies[i]].indexOf(undefined) > -1) {
       delete dailyPrices[allCurrencies[i]];
     }
@@ -83,14 +84,15 @@ export const computeStayPrices = (guestData, hotelCurrency, applicableRatePlans)
   return dailyPrices;
 };
 
-export const computePrices = (guestData, hotel) => {
+export const computePrices = (arrivalDateDayjs, departureDateDayjs, guests, hotel) => {
+  // TODO expect arrays as an input
   let { roomTypes, ratePlans } = hotel;
   roomTypes = Object.values(roomTypes);
   ratePlans = Object.values(ratePlans);
 
   return roomTypes.map((roomType) => {
     const applicableRatePlans = selectApplicableRatePlans(
-      roomType, ratePlans, guestData.helpers.arrivalDateDayjs, guestData.helpers.departureDateDayjs
+      roomType, ratePlans, arrivalDateDayjs, departureDateDayjs
     );
 
     // no rate plans available at all, bail
@@ -103,7 +105,7 @@ export const computePrices = (guestData, hotel) => {
     }
 
     const dailyPrices = computeStayPrices(
-      guestData, hotel.currency, applicableRatePlans,
+      arrivalDateDayjs, departureDateDayjs, guests, hotel.currency, applicableRatePlans,
     );
     // TODO keep estimates in multiple currencies
     // for now, randomly pick a currency
