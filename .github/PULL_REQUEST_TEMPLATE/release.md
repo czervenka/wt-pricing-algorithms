@@ -1,0 +1,4 @@
+- Merge this PR with a merge commit.
+- Manually tag the resulting merge commit with @@tag@@ and push it to github.
+- Travis makes a release from a tagged commit.
+- Don't delete the develop branch!

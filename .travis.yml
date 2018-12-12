@@ -1,0 +1,29 @@
+dist: trusty
+sudo: false
+group: beta
+language: node_js
+cache:
+  directories:
+    - $HOME/.npm
+install: case $TRAVIS_BRANCH in greenkeeper*) npm i;; *) npm ci;; esac;
+jobs:
+  include:
+  - stage: test
+    script:
+    - set -e
+    - npm run flow
+    - npm run lint
+    - npm run test
+    - npm run coverage
+  - stage: NPM release
+    if: tag IS present
+    script: echo 'Deploying to NPM...'
+    before_deploy: npm run build
+    deploy:
+      provider: npm
+      email: chadima.jiri@gmail.com
+      skip_cleanup: true
+      api_key: "$NPM_TOKEN"
+      on:
+        repo: windingtree/wt-pricing-algorithms
+        tags: true

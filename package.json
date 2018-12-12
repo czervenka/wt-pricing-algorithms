@@ -1,0 +1,89 @@
+{
+  "name": "@windingtree/wt-pricing-algorithms",
+  "version": "0.6.0",
+  "description": "Javascript libraries to interact with the Winding Tree contracts",
+  "main": "dist/node/wt-pricing-algorithms.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "lint": "eslint src test",
+    "test": "rimraf coverage && jest --coverage",
+    "test-watch": "jest --watch",
+    "coverage": "cat coverage/lcov.info | coveralls",
+    "clean": "rimraf dist && rimraf docs",
+    "build": "webpack --config webpack.config.js --mode production",
+    "docs": "rimraf docs && mkdir docs && documentation build src/** -f md -o docs/reference.md"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/windingtree/wt-pricing-algorithms"
+  },
+  "keywords": [
+    "winding-tree"
+  ],
+  "author": "Winding Tree Developers <dev@windingtree.com>",
+  "license": "Apache-2.0",
+  "browser": {
+    "fs": false,
+    "child_process": false
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.0.0",
+    "dayjs": "^1.7.7",
+    "currency.js": "^1.2.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.1.5",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
+    "@babel/preset-env": "^7.1.5",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.0.0",
+    "babel-plugin-transform-builtin-extend": "^1.1.2",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-eslint": "^10.0.1",
+    "babel-jest": "^23.6.0",
+    "babel-loader": "^8.0.4",
+    "coveralls": "^3.0.1",
+    "documentation": "^9.0.0",
+    "esdoc": "^1.1.0",
+    "esdoc-ecmascript-proposal-plugin": "^1.0.0",
+    "esdoc-node": "^1.0.2",
+    "esdoc-standard-plugin": "^1.0.0",
+    "eslint": "^5.2.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-jest": "^22.0.0",
+    "eslint-plugin-import": "^2.13.0",
+    "eslint-plugin-node": "^8.0.0",
+    "eslint-plugin-promise": "^4.0.0",
+    "eslint-plugin-standard": "^4.0.0",
+    "flow-bin": "^0.88.0",
+    "rimraf": "^2.6.2",
+    "jest": "^23.6.0",
+    "webpack": "^4.21.0",
+    "webpack-bundle-size-analyzer": "^3.0.0",
+    "webpack-cli": "^3.1.0",
+    "webpack-node-externals": "^1.7.2"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "jest": {
+    "testRegex": "./test/.*.spec.js",
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "coverageReporters": [
+      "text",
+      "lcov"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ]
+  }
+}
