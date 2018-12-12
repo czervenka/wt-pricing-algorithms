@@ -124,7 +124,5 @@ export const computePrices = (guestData, hotel) => {
 };
 
 export default {
-  computeStayPrices,
-  computePrices,
-  computeDailyPrice,
+  determine: computePrices,
 };

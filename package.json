@@ -2,7 +2,7 @@
   "name": "@windingtree/wt-pricing-algorithms",
   "version": "0.6.0",
   "description": "Javascript libraries to interact with the Winding Tree contracts",
-  "main": "dist/node/wt-pricing-algorithms.js",
+  "main": "dist/web/wt-pricing-algorithms.js",
   "directories": {
     "test": "test"
   },
