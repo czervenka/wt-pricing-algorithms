@@ -2,25 +2,16 @@ import dayjs from 'dayjs';
 import {
   selectApplicableModifiers,
   selectBestGuestModifier,
-  getApplicableRatePlans,
+  selectApplicableRatePlans,
 } from '../../src/prices/rate-plans';
 
 describe('prices.rate-plans', () => {
-  let guestData;
+  let arrivalDateDayjs, departureDateDayjs;
   let hotel;
 
   beforeEach(() => {
-    guestData = {
-      arrival: '2018-01-03',
-      departure: '2018-01-05',
-      guests: [{ age: 18 }],
-      helpers: {
-        arrivalDateDayjs: dayjs('2018-01-03'),
-        departureDateDayjs: dayjs('2018-01-05'),
-        lengthOfStay: 2,
-        numberOfGuests: 1,
-      },
-    };
+    arrivalDateDayjs = dayjs('2018-01-03');
+    departureDateDayjs = dayjs('2018-01-05');
     hotel = {
       id: '0x933198455e38925bccb4bfe9fb59bac31d00b4d3',
       currency: 'CZK',
@@ -46,17 +37,18 @@ describe('prices.rate-plans', () => {
     };
   });
 
-  describe('getApplicableRatePlans', () => {
+  describe('selectApplicableRatePlans', () => {
     it('should not use a rate plan if it is not available for reservation based on current date', () => {
       // make sure the rate plan for rtb does not work for today
       hotel.ratePlans.rpa.availableForReservation = {
         from: '2015-01-01',
         to: '2015-10-10',
       };
-      const result = getApplicableRatePlans(
-        guestData,
+      const result = selectApplicableRatePlans(
         hotel.roomTypes.rtb,
         [hotel.ratePlans.rpa],
+        arrivalDateDayjs,
+        departureDateDayjs,
       );
       expect(result.length).toBe(0);
     });
@@ -67,19 +59,21 @@ describe('prices.rate-plans', () => {
         from: '2015-01-01',
         to: '2015-10-10',
       };
-      const result = getApplicableRatePlans(
-        guestData,
+      const result = selectApplicableRatePlans(
         hotel.roomTypes.rtb,
         [hotel.ratePlans.rpa],
+        arrivalDateDayjs,
+        departureDateDayjs,
       );
       expect(result.length).toBe(0);
     });
 
     it('should return the only fitting rate plan', () => {
-      const result = getApplicableRatePlans(
-        guestData,
+      const result = selectApplicableRatePlans(
         hotel.roomTypes.rtb,
         [hotel.ratePlans.rpa],
+        arrivalDateDayjs,
+        departureDateDayjs,
       );
       expect(result.length).toBe(1);
       expect(result[0]).toHaveProperty('price', 100);
@@ -87,10 +81,11 @@ describe('prices.rate-plans', () => {
 
     it('should return rate plan without availableForTravel', () => {
       hotel.ratePlans.rpa.availableForTravel = undefined;
-      const result = getApplicableRatePlans(
-        guestData,
+      const result = selectApplicableRatePlans(
         hotel.roomTypes.rtb,
         [hotel.ratePlans.rpa],
+        arrivalDateDayjs,
+        departureDateDayjs,
       );
       expect(result.length).toBe(1);
       expect(result[0]).toHaveProperty('price', 100);
@@ -98,10 +93,11 @@ describe('prices.rate-plans', () => {
 
     it('should return rate plan without availableForReservation', () => {
       hotel.ratePlans.rpa.availableForReservation = undefined;
-      const result = getApplicableRatePlans(
-        guestData,
+      const result = selectApplicableRatePlans(
         hotel.roomTypes.rtb,
         [hotel.ratePlans.rpa],
+        arrivalDateDayjs,
+        departureDateDayjs,
       );
       expect(result.length).toBe(1);
       expect(result[0]).toHaveProperty('price', 100);
@@ -121,32 +117,25 @@ describe('prices.rate-plans', () => {
           to: '2020-09-30',
         },
       };
-      const result = getApplicableRatePlans(
-        guestData,
+      const result = selectApplicableRatePlans(
         hotel.roomTypes.rtb,
         Object.values(hotel.ratePlans),
+        arrivalDateDayjs,
+        departureDateDayjs,
       );
       expect(result.length).toBe(2);
     });
 
     describe('restrictions', () => {
-      let currentGuestData;
+      let currentArrivalDateDayjs;
+      let currentDepartureDateDayjs;
       let ratePlans;
       let today;
 
       beforeEach(() => {
         today = dayjs();
-        currentGuestData = {
-          arrival: dayjs(today).add(5, 'days').format('YYYY-MM-DD'),
-          departure: dayjs(today).add(7, 'days').format('YYYY-MM-DD'),
-          guests: [{ age: 18 }],
-          helpers: {
-            arrivalDateDayjs: dayjs(today).add(5, 'days'),
-            departureDateDayjs: dayjs(today).add(7, 'days'),
-            lengthOfStay: 2,
-            numberOfGuests: 1,
-          },
-        };
+        currentArrivalDateDayjs = dayjs(today).add(5, 'days');
+        currentDepartureDateDayjs = dayjs(today).add(7, 'days');
         ratePlans = [
           {
             id: 'rpb',
@@ -184,10 +173,11 @@ describe('prices.rate-plans', () => {
               min: 20,
             },
           };
-          const result = getApplicableRatePlans(
-            currentGuestData,
+          const result = selectApplicableRatePlans(
             hotel.roomTypes.rtb,
             ratePlans,
+            currentArrivalDateDayjs,
+            currentDepartureDateDayjs,
           );
           expect(result.length).toBe(1);
         });
@@ -198,10 +188,11 @@ describe('prices.rate-plans', () => {
               max: 2,
             },
           };
-          const result = getApplicableRatePlans(
-            currentGuestData,
+          const result = selectApplicableRatePlans(
             hotel.roomTypes.rtb,
             ratePlans,
+            currentArrivalDateDayjs,
+            currentDepartureDateDayjs,
           );
           expect(result.length).toBe(1);
         });
@@ -213,10 +204,11 @@ describe('prices.rate-plans', () => {
               max: 8,
             },
           };
-          const result = getApplicableRatePlans(
-            currentGuestData,
+          const result = selectApplicableRatePlans(
             hotel.roomTypes.rtb,
             ratePlans,
+            currentArrivalDateDayjs,
+            currentDepartureDateDayjs,
           );
           expect(result.length).toBe(2);
         });
@@ -229,10 +221,11 @@ describe('prices.rate-plans', () => {
               min: 4,
             },
           };
-          const result = getApplicableRatePlans(
-            currentGuestData,
+          const result = selectApplicableRatePlans(
             hotel.roomTypes.rtb,
             ratePlans,
+            currentArrivalDateDayjs,
+            currentDepartureDateDayjs,
           );
           expect(result.length).toBe(1);
         });
@@ -243,10 +236,11 @@ describe('prices.rate-plans', () => {
               max: 1,
             },
           };
-          const result = getApplicableRatePlans(
-            currentGuestData,
+          const result = selectApplicableRatePlans(
             hotel.roomTypes.rtb,
             ratePlans,
+            currentArrivalDateDayjs,
+            currentDepartureDateDayjs,
           );
           expect(result.length).toBe(1);
         });
@@ -258,10 +252,11 @@ describe('prices.rate-plans', () => {
               max: 10,
             },
           };
-          const result = getApplicableRatePlans(
-            currentGuestData,
+          const result = selectApplicableRatePlans(
             hotel.roomTypes.rtb,
             ratePlans,
+            currentArrivalDateDayjs,
+            currentDepartureDateDayjs,
           );
           expect(result.length).toBe(2);
         });
@@ -272,21 +267,19 @@ describe('prices.rate-plans', () => {
   describe('selectApplicableModifiers', () => {
     it('should drop modifiers without conditions', () => {
       const modifiers = selectApplicableModifiers(
-        { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } },
         [
           { adjustment: 10 },
-        ], dayjs('2018-09-12'),
+        ], dayjs('2018-09-12'), 3, 1
       );
       expect(modifiers.length).toBe(0);
     });
 
     it('should pass through guest specific modifiers', () => {
       const modifiers = selectApplicableModifiers(
-        { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } },
         [
           { adjustment: -25, conditions: { maxAge: 10 } },
           { adjustment: -33, conditions: { maxAge: 12 } },
-        ], dayjs('2018-09-12'),
+        ], dayjs('2018-09-12'), 3, 1
       );
       expect(modifiers.length).toBe(2);
     });
@@ -294,7 +287,6 @@ describe('prices.rate-plans', () => {
     describe('time interval from, to', () => {
       it('should keep modifiers if date is within interval', () => {
         const modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } },
           [
             {
               adjustment: -25,
@@ -303,14 +295,13 @@ describe('prices.rate-plans', () => {
                 to: '2018-09-20',
               },
             },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(1);
       });
 
       it('should keep modifier starting on a stay date', () => {
         const modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } },
           [
             {
               adjustment: -25,
@@ -319,14 +310,13 @@ describe('prices.rate-plans', () => {
                 to: '2018-09-20',
               },
             },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(1);
       });
 
       it('should keep modifier ending on a stay date', () => {
         const modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } },
           [
             {
               adjustment: -25,
@@ -335,14 +325,14 @@ describe('prices.rate-plans', () => {
                 to: '2018-09-12',
               },
             },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(1);
       });
 
-      it('should drop modidifer if stay date is not within interval', () => {
+      it('should drop modififer if stay date is not within interval', () => {
         const modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } }, [
+          [
             {
               adjustment: -25,
               conditions: {
@@ -350,14 +340,13 @@ describe('prices.rate-plans', () => {
                 to: '2018-08-12',
               },
             },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(0);
       });
 
       it('should keep modifier if only from is set and stay date is in', () => {
         const modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } },
           [
             {
               adjustment: -25,
@@ -365,14 +354,13 @@ describe('prices.rate-plans', () => {
                 from: '2018-09-10',
               },
             },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(1);
       });
 
       it('should drop modifier if only from is set and stay date is out', () => {
         const modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } },
           [
             {
               adjustment: -25,
@@ -380,14 +368,13 @@ describe('prices.rate-plans', () => {
                 from: '2018-09-16',
               },
             },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(0);
       });
 
       it('should keep modifier if only to is set and stay date is in', () => {
         const modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } },
           [
             {
               adjustment: -25,
@@ -395,14 +382,13 @@ describe('prices.rate-plans', () => {
                 to: '2018-09-13',
               },
             },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(1);
       });
 
       it('should drop modifier if only to is set and stay date is out', () => {
         const modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } },
           [
             {
               adjustment: -25,
@@ -410,7 +396,7 @@ describe('prices.rate-plans', () => {
                 to: '2018-09-10',
               },
             },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(0);
       });
@@ -419,62 +405,56 @@ describe('prices.rate-plans', () => {
     describe('minLengthOfStay', () => {
       it('should not apply modifier if LOS is shorter', () => {
         const modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } },
           [
             { adjustment: -25, conditions: { minLengthOfStay: 5 } },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(0);
       });
 
       it('should apply modifier if LOS is equal', () => {
         const modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } },
           [
             { adjustment: -25, conditions: { minLengthOfStay: 3 } },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(1);
       });
 
       it('should apply modifier if LOS is longer', () => {
         const modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 7, numberOfGuests: 1 } },
           [
             { adjustment: -25, conditions: { minLengthOfStay: 5 } },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 7, 1
         );
         expect(modifiers.length).toBe(1);
       });
 
       it('should apply modifier with the biggest applicable LOS', () => {
         let modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 7, numberOfGuests: 1 } },
           [
             { adjustment: -25, conditions: { minLengthOfStay: 5 } },
             { adjustment: -10, conditions: { minLengthOfStay: 7 } },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 7, 1
         );
         expect(modifiers.length).toBe(1);
         expect(modifiers[0].adjustment).toBe(-10);
 
         modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 7, numberOfGuests: 1 } },
           [
             { adjustment: -10, conditions: { minLengthOfStay: 7 } },
             { adjustment: -25, conditions: { minLengthOfStay: 5 } },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 7, 1
         );
         expect(modifiers.length).toBe(1);
         expect(modifiers[0].adjustment).toBe(-10);
 
         modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 7, numberOfGuests: 1 } },
           [
             { adjustment: -50, conditions: { minLengthOfStay: 6 } },
             { adjustment: -10, conditions: { minLengthOfStay: 7 } },
             { adjustment: -25, conditions: { minLengthOfStay: 5 } },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 7, 1
         );
         expect(modifiers.length).toBe(1);
         expect(modifiers[0].adjustment).toBe(-10);
@@ -484,58 +464,37 @@ describe('prices.rate-plans', () => {
     describe('minOccupants', () => {
       it('should not apply modifier if number of guests is smaller', () => {
         const modifiers = selectApplicableModifiers(
-          { guests: [{ age: 18 }], helpers: { lengthOfStay: 3, numberOfGuests: 1 } },
           [
             { adjustment: -25, conditions: { minOccupants: 5 } },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(0);
       });
 
       it('should apply modifier if number of guests is equal', () => {
         const modifiers = selectApplicableModifiers(
-          {
-            guests: [
-              { age: 10 }, { age: 20 }, { age: 30 },
-            ],
-            helpers: { lengthOfStay: 3, numberOfGuests: 3 },
-          },
           [
             { adjustment: -25, conditions: { minOccupants: 3 } },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 3
         );
         expect(modifiers.length).toBe(1);
       });
 
       it('should apply modifier if number of guests is larger', () => {
         const modifiers = selectApplicableModifiers(
-          {
-            guests: [
-              { age: 9 }, { age: 10 }, { age: 11 }, { age: 12 }, { age: 13 },
-              { age: 14 }, { age: 15 }, { age: 16 }, { age: 17 }, { age: 18 },
-            ],
-            helpers: { lengthOfStay: 3, numberOfGuests: 10 },
-          },
           [
             { adjustment: -25, conditions: { minOccupants: 5 } },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 10
         );
         expect(modifiers.length).toBe(1);
       });
 
       it('should apply modifier with the biggest applicable minOccupants', () => {
         const modifiers = selectApplicableModifiers(
-          {
-            guests: [
-              { age: 10 }, { age: 11 }, { age: 12 }, { age: 13 }, { age: 14 },
-              { age: 15 }, { age: 16 },
-            ],
-            helpers: { lengthOfStay: 3, numberOfGuests: 7 },
-          },
           [
             { adjustment: -10, conditions: { minOccupants: 7 } },
             { adjustment: -25, conditions: { minOccupants: 5 } },
-          ], dayjs('2018-09-12'),
+          ], dayjs('2018-09-12'), 3, 7
         );
         expect(modifiers.length).toBe(1);
         expect(modifiers[0].adjustment).toBe(-10);

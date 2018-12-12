@@ -3,12 +3,12 @@ import currency from 'currency.js';
 import {
   selectApplicableModifiers,
   selectBestGuestModifier,
-  getApplicableRatePlans,
+  selectApplicableRatePlans,
 } from './rate-plans';
 
 export const computeDailyPrice = (guestData, dateDayjs, ratePlan) => {
   const applicableModifiers = selectApplicableModifiers(
-    guestData, ratePlan.modifiers, dateDayjs,
+    ratePlan.modifiers, dateDayjs, guestData.helpers.lengthOfStay, guestData.helpers.numberOfGuests
   );
   if (!applicableModifiers.length) {
     return currency(ratePlan.price).multiply(guestData.helpers.numberOfGuests);
@@ -32,7 +32,6 @@ export const computeDailyPrice = (guestData, dateDayjs, ratePlan) => {
 export const computeStayPrices = (guestData, hotelCurrency, applicableRatePlans) => {
   const dailyPrices = {};
   let currentDate = dayjs(guestData.helpers.arrivalDateDayjs);
-  dailyPrices[hotelCurrency] = [];
   // Find an appropriate rate plan for every day
   for (let i = 0; i < guestData.helpers.lengthOfStay; i += 1) {
     let currentRatePlan;
@@ -90,8 +89,8 @@ export const computePrices = (guestData, hotel) => {
   ratePlans = Object.values(ratePlans);
 
   return roomTypes.map((roomType) => {
-    const applicableRatePlans = getApplicableRatePlans(
-      guestData, roomType, ratePlans,
+    const applicableRatePlans = selectApplicableRatePlans(
+      roomType, ratePlans, guestData.helpers.arrivalDateDayjs, guestData.helpers.departureDateDayjs
     );
 
     // no rate plans available at all, bail
