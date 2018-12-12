@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
 import {
   computeCancellationFees, normalizePolicyDates, createFeeSchedule, reduceFeeSchedule,
-} from '../../src/services/cancellation-fees';
+} from '../src/cancellation-fees';
 
-describe('services.cancellation-fees', () => {
+describe('cancellation-fees', () => {
   const defaultCancellationAmount = 11;
   const today = dayjs('2018-03-13');
   const arrival = dayjs('2018-07-21');

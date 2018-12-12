@@ -3,9 +3,9 @@ import {
   selectApplicableModifiers,
   selectBestGuestModifier,
   getApplicableRatePlans,
-} from '../../../src/services/pricing-algorithm/rate-plans';
+} from '../../src/prices/rate-plans';
 
-describe('services.pricing-algorithm.rate-plans', () => {
+describe('prices.rate-plans', () => {
   let guestData;
   let hotel;
 
