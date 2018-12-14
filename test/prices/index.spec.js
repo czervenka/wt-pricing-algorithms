@@ -4,6 +4,7 @@ import { computePrices, computeStayPrices, computeDailyPrice } from '../../src/p
 
 describe('prices.index', () => {
   let guests;
+  let bookingDateDayjs;
   let arrivalDateDayjs;
   let departureDateDayjs;
   let fallbackCurrency;
@@ -12,6 +13,7 @@ describe('prices.index', () => {
 
   beforeEach(() => {
     guests = [{ age: 18 }];
+    bookingDateDayjs = dayjs();
     arrivalDateDayjs = dayjs('2018-01-03');
     departureDateDayjs = dayjs('2018-01-05');
     fallbackCurrency = 'CZK';
@@ -39,7 +41,7 @@ describe('prices.index', () => {
   describe('computePrices', () => {
     // TODO multiple currencies
     it('should return null price if no rate plan matches the room type', () => {
-      const result = computePrices(arrivalDateDayjs, departureDateDayjs, guests, roomTypes, ratePlans, fallbackCurrency);
+      const result = computePrices(bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, guests, roomTypes, ratePlans, fallbackCurrency);
       expect(result.find(e => e.id === 'rta')).toHaveProperty('price', undefined);
       expect(result.find(e => e.id === 'rta')).toHaveProperty('currency', fallbackCurrency);
     });

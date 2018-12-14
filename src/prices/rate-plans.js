@@ -86,8 +86,7 @@ export const selectBestGuestModifier = (modifiers, age) => {
   return genericModifiers[0];
 };
 
-export const selectApplicableRatePlans = (roomType, ratePlans, arrivalDateDayjs, departureDateDayjs, fallbackCurrency, preferredCurrency = null) => {
-  const now = dayjs();
+export const selectApplicableRatePlans = (roomType, ratePlans, bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, fallbackCurrency, preferredCurrency = null) => {
   const lengthOfStay = Math.abs(arrivalDateDayjs.diff(departureDateDayjs, 'days'));
   return ratePlans.filter((rp) => {
     // Rate plan is not tied to this room type
@@ -105,8 +104,8 @@ export const selectApplicableRatePlans = (roomType, ratePlans, arrivalDateDayjs,
     // Rate plan cannot be used today
       const availableForReservationFrom = dayjs(rp.availableForReservation.from);
       const availableForReservationTo = dayjs(rp.availableForReservation.to);
-      if (availableForReservationTo.isBefore(now) ||
-          availableForReservationFrom.isAfter(now)) {
+      if (availableForReservationTo.isBefore(bookingDateDayjs) ||
+          availableForReservationFrom.isAfter(bookingDateDayjs)) {
         return false;
       }
     }
@@ -126,7 +125,7 @@ export const selectApplicableRatePlans = (roomType, ratePlans, arrivalDateDayjs,
         if (rp.restrictions.bookingCutOff.min &&
           dayjs(arrivalDateDayjs)
             .subtract(rp.restrictions.bookingCutOff.min, 'days')
-            .isBefore(now)
+            .isBefore(bookingDateDayjs)
         ) {
           return false;
         }
@@ -134,7 +133,7 @@ export const selectApplicableRatePlans = (roomType, ratePlans, arrivalDateDayjs,
         if (rp.restrictions.bookingCutOff.max &&
           dayjs(arrivalDateDayjs)
             .subtract(rp.restrictions.bookingCutOff.max, 'days')
-            .isAfter(now)
+            .isAfter(bookingDateDayjs)
         ) {
           return false;
         }

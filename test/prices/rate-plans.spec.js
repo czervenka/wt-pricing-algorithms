@@ -6,10 +6,11 @@ import {
 } from '../../src/prices/rate-plans';
 
 describe('prices.rate-plans', () => {
-  let arrivalDateDayjs, departureDateDayjs, fallbackCurrency;
+  let bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, fallbackCurrency;
   let ratePlans, roomTypes;
 
   beforeEach(() => {
+    bookingDateDayjs = dayjs();
     arrivalDateDayjs = dayjs('2018-01-03');
     departureDateDayjs = dayjs('2018-01-05');
     fallbackCurrency = 'CZK';
@@ -44,6 +45,7 @@ describe('prices.rate-plans', () => {
       const result = selectApplicableRatePlans(
         roomTypes[1],
         ratePlans,
+        bookingDateDayjs,
         arrivalDateDayjs,
         departureDateDayjs,
       );
@@ -59,6 +61,7 @@ describe('prices.rate-plans', () => {
       const result = selectApplicableRatePlans(
         roomTypes[1],
         ratePlans,
+        bookingDateDayjs,
         arrivalDateDayjs,
         departureDateDayjs,
       );
@@ -69,6 +72,7 @@ describe('prices.rate-plans', () => {
       const result = selectApplicableRatePlans(
         roomTypes[1],
         ratePlans,
+        bookingDateDayjs,
         arrivalDateDayjs,
         departureDateDayjs,
       );
@@ -81,6 +85,7 @@ describe('prices.rate-plans', () => {
       const result = selectApplicableRatePlans(
         roomTypes[1],
         ratePlans,
+        bookingDateDayjs,
         arrivalDateDayjs,
         departureDateDayjs,
       );
@@ -93,6 +98,7 @@ describe('prices.rate-plans', () => {
       const result = selectApplicableRatePlans(
         roomTypes[1],
         ratePlans,
+        bookingDateDayjs,
         arrivalDateDayjs,
         departureDateDayjs,
       );
@@ -117,6 +123,7 @@ describe('prices.rate-plans', () => {
       const result = selectApplicableRatePlans(
         roomTypes[1],
         ratePlans,
+        bookingDateDayjs,
         arrivalDateDayjs,
         departureDateDayjs,
       );
@@ -143,6 +150,7 @@ describe('prices.rate-plans', () => {
       const result = selectApplicableRatePlans(
         roomTypes[1],
         ratePlans,
+        bookingDateDayjs,
         arrivalDateDayjs,
         departureDateDayjs,
         fallbackCurrency,
@@ -155,6 +163,7 @@ describe('prices.rate-plans', () => {
       const result = selectApplicableRatePlans(
         roomTypes[1],
         ratePlans,
+        bookingDateDayjs,
         arrivalDateDayjs,
         departureDateDayjs,
         fallbackCurrency,
@@ -213,6 +222,7 @@ describe('prices.rate-plans', () => {
           const result = selectApplicableRatePlans(
             roomTypes[1],
             ratePlans,
+            bookingDateDayjs,
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
           );
@@ -228,6 +238,7 @@ describe('prices.rate-plans', () => {
           const result = selectApplicableRatePlans(
             roomTypes[1],
             ratePlans,
+            bookingDateDayjs,
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
           );
@@ -244,6 +255,7 @@ describe('prices.rate-plans', () => {
           const result = selectApplicableRatePlans(
             roomTypes[1],
             ratePlans,
+            bookingDateDayjs,
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
           );
@@ -261,6 +273,7 @@ describe('prices.rate-plans', () => {
           const result = selectApplicableRatePlans(
             roomTypes[1],
             ratePlans,
+            bookingDateDayjs,
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
           );
@@ -276,6 +289,7 @@ describe('prices.rate-plans', () => {
           const result = selectApplicableRatePlans(
             roomTypes[1],
             ratePlans,
+            bookingDateDayjs,
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
           );
@@ -292,6 +306,7 @@ describe('prices.rate-plans', () => {
           const result = selectApplicableRatePlans(
             roomTypes[1],
             ratePlans,
+            bookingDateDayjs,
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
           );
