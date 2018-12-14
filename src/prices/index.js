@@ -118,5 +118,12 @@ export const computePrices = (bookingDate, arrivalDate, departureDate, guests, r
 };
 
 export default {
-  determine: computePrices,
+  computeStayPrices,
+  computeDailyPrice,
+  computePrices,
+  ratePlans: {
+    selectApplicableModifiers,
+    selectBestGuestModifier,
+    selectApplicableRatePlans,
+  },
 };

@@ -119,5 +119,8 @@ export const computeCancellationFees = (todayDayjs, arrivalDayjs,
 };
 
 export default {
-  determine: computeCancellationFees,
+  normalizePolicyDates,
+  createFeeSchedule,
+  reduceFeeSchedule,
+  computeCancellationFees,
 };
