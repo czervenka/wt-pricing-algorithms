@@ -84,12 +84,7 @@ export const computeStayPrices = (arrivalDateDayjs, departureDateDayjs, guests, 
   return dailyPrices;
 };
 
-export const computePrices = (arrivalDateDayjs, departureDateDayjs, guests, hotel) => {
-  // TODO expect arrays as an input
-  let { roomTypes, ratePlans } = hotel;
-  roomTypes = Object.values(roomTypes);
-  ratePlans = Object.values(ratePlans);
-
+export const computePrices = (arrivalDateDayjs, departureDateDayjs, guests, roomTypes, ratePlans, fallbackCurrency) => {
   return roomTypes.map((roomType) => {
     const applicableRatePlans = selectApplicableRatePlans(
       roomType, ratePlans, arrivalDateDayjs, departureDateDayjs
@@ -100,12 +95,12 @@ export const computePrices = (arrivalDateDayjs, departureDateDayjs, guests, hote
       return {
         id: roomType.id,
         price: undefined,
-        currency: hotel.currency,
+        currency: fallbackCurrency,
       };
     }
 
     const dailyPrices = computeStayPrices(
-      arrivalDateDayjs, departureDateDayjs, guests, hotel.currency, applicableRatePlans,
+      arrivalDateDayjs, departureDateDayjs, guests, fallbackCurrency, applicableRatePlans,
     );
     // TODO keep estimates in multiple currencies
     // for now, randomly pick a currency
@@ -119,7 +114,7 @@ export const computePrices = (arrivalDateDayjs, departureDateDayjs, guests, hote
     return {
       id: roomType.id,
       price: resultingPrice,
-      currency: eligibleCurrencies[0] || hotel.currency,
+      currency: eligibleCurrencies[0] || fallbackCurrency,
     };
   });
 };
