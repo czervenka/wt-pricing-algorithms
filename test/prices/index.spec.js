@@ -37,11 +37,43 @@ describe('prices.index', () => {
   });
 
   describe('computePrices', () => {
-    // TODO multiple currencies
     it('should return null price if no rate plan matches the room type', () => {
       const result = computePrices(new Date(), '2018-01-03', '2018-01-05', guests, roomTypes, ratePlans, fallbackCurrency);
-      expect(result.find(e => e.id === 'rta')).toHaveProperty('price', undefined);
-      expect(result.find(e => e.id === 'rta')).toHaveProperty('currency', fallbackCurrency);
+      expect(result.find(e => e.id === 'rta')).toHaveProperty('prices', []);
+    });
+
+    it('should return a single price if a rate plan matches the room type', () => {
+      const result = computePrices(new Date(), '2018-01-03', '2018-01-05', guests, roomTypes, ratePlans, fallbackCurrency);
+      const rtb = result.find(e => e.id === 'rtb');
+      expect(rtb).toHaveProperty('prices');
+      expect(rtb.prices.length).toBe(1);
+      expect(rtb.prices[0]).toHaveProperty('currency', 'CZK');
+      expect(rtb.prices[0].total.format()).toBe(currency(200).format());
+    });
+
+    it('should return prices in multiple currencies', () => {
+      ratePlans.push({
+        id: 'rpa-eur',
+        currency: 'EUR',
+        price: 33,
+        roomTypeIds: ['rtb'],
+        availableForReservation: {
+          from: '2018-01-01',
+          to: '2020-12-31',
+        },
+        availableForTravel: {
+          from: '2016-06-01',
+          to: '2020-12-31',
+        },
+      });
+      const result = computePrices(new Date(), '2018-01-03', '2018-01-05', guests, roomTypes, ratePlans, fallbackCurrency);
+      const rtb = result.find(e => e.id === 'rtb');
+      expect(rtb).toHaveProperty('prices');
+      expect(rtb.prices.length).toBe(2);
+      expect(rtb.prices[0]).toHaveProperty('currency', 'CZK');
+      expect(rtb.prices[0].total.format()).toBe(currency(200).format());
+      expect(rtb.prices[1]).toHaveProperty('currency', 'EUR');
+      expect(rtb.prices[1].total.format()).toBe(currency(66).format());
     });
   });
 

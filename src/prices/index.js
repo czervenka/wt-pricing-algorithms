@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import currency from 'currency.js';
+import currencyjs from 'currency.js';
 import {
   selectApplicableModifiers,
   selectBestGuestModifier,
@@ -11,7 +11,7 @@ export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan) => 
     ratePlan.modifiers, dateDayjs, lengthOfStay, guests.length
   );
   if (!applicableModifiers.length) {
-    return currency(ratePlan.price).multiply(guests.length);
+    return currencyjs(ratePlan.price).multiply(guests.length);
   }
 
   const guestPrices = [];
@@ -26,7 +26,7 @@ export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan) => 
     }
     guestPrices.push(ratePlan.price + adjustment);
   }
-  return guestPrices.reduce((a, b) => a.add(currency(b)), currency(0));
+  return guestPrices.reduce((a, b) => a.add(currencyjs(b)), currencyjs(0));
 };
 
 export const computeStayPrices = (arrivalDateDayjs, departureDateDayjs, guests, hotelCurrency, applicableRatePlans) => {
@@ -92,33 +92,28 @@ export const computePrices = (bookingDate, arrivalDate, departureDate, guests, r
     const applicableRatePlans = selectApplicableRatePlans(
       roomType, ratePlans, bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, fallbackCurrency, preferredCurrency
     );
-
+    const response = {
+      id: roomType.id,
+      prices: [],
+    };
     // no rate plans available at all, bail
     if (!applicableRatePlans.length) {
-      return {
-        id: roomType.id,
-        price: undefined,
-        currency: fallbackCurrency,
-      };
+      return response;
     }
 
     const dailyPrices = computeStayPrices(
       arrivalDateDayjs, departureDateDayjs, guests, fallbackCurrency, applicableRatePlans,
     );
-    // TODO keep estimates in multiple currencies
-    // for now, randomly pick a currency
-    const eligibleCurrencies = Object.keys(dailyPrices);
-    let resultingPrice;
-    if (eligibleCurrencies.length > 0) {
-      resultingPrice = dailyPrices[eligibleCurrencies[0]]
-        .reduce((a, b) => a.add(currency(b)), currency(0));
-    }
 
-    return {
-      id: roomType.id,
-      price: resultingPrice,
-      currency: eligibleCurrencies[0] || fallbackCurrency,
-    };
+    response.prices = Object.keys(dailyPrices).map((currency) => {
+      return {
+        currency: currency,
+        total: dailyPrices[currency]
+          .reduce((a, b) => a.add(currencyjs(b)), currencyjs(0)),
+      };
+    });
+
+    return response;
   });
 };
 
