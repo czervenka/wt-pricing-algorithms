@@ -116,7 +116,7 @@ describe('cancellation-fees', () => {
     });
   });
 
-  describe('createFreeSchedule', () => {
+  describe('createFeeSchedule', () => {
     const policies = [
       { from: dayjs('2018-07-10'), to: dayjs('2018-07-25'), amount: 22 },
       { from: dayjs('2018-05-11'), to: dayjs('2018-07-14'), amount: 33 },
@@ -124,10 +124,10 @@ describe('cancellation-fees', () => {
 
     it('should expand existing policy', () => {
       const result = createFeeSchedule(dayjs('2018-07-10'), dayjs('2018-07-25'), [policies[0]], defaultCancellationAmount);
-      expect(Object.keys(result).length).toBe(16);
-      for (let i = 10; i < 26; i += 1) {
-        expect(result[`2018-07-${i}`].dateDayjs.format('YYYY-MM-DD')).toBe(`2018-07-${i}`);
-        expect(result[`2018-07-${i}`].amount).toBe(22);
+      expect(result.length).toBe(16);
+      for (let i = 0; i < 26 - 10; i += 1) {
+        expect(result[i].dateDayjs.format('YYYY-MM-DD')).toBe(`2018-07-${i + 10}`);
+        expect(result[i].amount).toBe(22);
       }
     });
 
@@ -136,10 +136,10 @@ describe('cancellation-fees', () => {
         { from: dayjs('2018-07-10'), to: dayjs('2018-07-13'), amount: 22 },
         { from: dayjs('2018-07-14'), to: dayjs('2018-07-20'), amount: 33 },
       ], defaultCancellationAmount);
-      expect(Object.keys(result).length).toBe(11);
-      for (let i = 10; i < 21; i += 1) {
-        expect(result[`2018-07-${i}`].dateDayjs.format('YYYY-MM-DD')).toBe(`2018-07-${i}`);
-        expect(result[`2018-07-${i}`].amount).toBe(i < 14 ? 22 : 33);
+      expect(result.length).toBe(11);
+      for (let i = 0; i < 21 - 10; i += 1) {
+        expect(result[i].dateDayjs.format('YYYY-MM-DD')).toBe(`2018-07-${i + 10}`);
+        expect(result[i].amount).toBe(i < 14 - 10 ? 22 : 33);
       }
     });
 
@@ -148,10 +148,10 @@ describe('cancellation-fees', () => {
         { from: dayjs('2018-07-10'), to: dayjs('2018-07-17'), amount: 22 },
         { from: dayjs('2018-07-13'), to: dayjs('2018-07-20'), amount: 33 },
       ], defaultCancellationAmount);
-      expect(Object.keys(result).length).toBe(11);
-      for (let i = 10; i < 21; i += 1) {
-        expect(result[`2018-07-${i}`].dateDayjs.format('YYYY-MM-DD')).toBe(`2018-07-${i}`);
-        expect(result[`2018-07-${i}`].amount).toBe(i < 13 ? 22 : 33);
+      expect(result.length).toBe(11);
+      for (let i = 0; i < 21 - 10; i += 1) {
+        expect(result[i].dateDayjs.format('YYYY-MM-DD')).toBe(`2018-07-${i + 10}`);
+        expect(result[i].amount).toBe(i < 13 - 10 ? 22 : 33);
       }
     });
 
@@ -160,41 +160,41 @@ describe('cancellation-fees', () => {
         { from: dayjs('2018-07-12'), to: dayjs('2018-07-17'), amount: 22 },
         { from: dayjs('2018-07-13'), to: dayjs('2018-07-20'), amount: 33 },
       ], defaultCancellationAmount);
-      expect(Object.keys(result).length).toBe(16);
-      for (let i = 10; i < 26; i += 1) {
+      expect(result.length).toBe(16);
+      for (let i = 0; i < 26 - 10; i += 1) {
         let expected = defaultCancellationAmount;
-        if (i >= 12 && i <= 12) {
+        if (i >= 12 - 10 && i <= 12 - 10) {
           expected = 22;
         }
-        if (i >= 13 && i <= 20) {
+        if (i >= 13 - 10 && i <= 20 - 10) {
           expected = 33;
         }
-        expect(result[`2018-07-${i}`].dateDayjs.format('YYYY-MM-DD')).toBe(`2018-07-${i}`);
-        expect(result[`2018-07-${i}`].amount).toBe(expected);
+        expect(result[i].dateDayjs.format('YYYY-MM-DD')).toBe(`2018-07-${i + 10}`);
+        expect(result[i].amount).toBe(expected);
       }
     });
   });
 
   describe('reduceFeeSchedule', () => {
     it('should compact neighbouring dates with the same amount', () => {
-      const schedule = {
-        '2018-07-10': { dateDayjs: dayjs('2018-07-10'), amount: 11 },
-        '2018-07-11': { dateDayjs: dayjs('2018-07-11'), amount: 11 },
-        '2018-07-12': { dateDayjs: dayjs('2018-07-12'), amount: 22 },
-        '2018-07-13': { dateDayjs: dayjs('2018-07-13'), amount: 22 },
-        '2018-07-14': { dateDayjs: dayjs('2018-07-14'), amount: 22 },
-        '2018-07-15': { dateDayjs: dayjs('2018-07-15'), amount: 22 },
-        '2018-07-16': { dateDayjs: dayjs('2018-07-16'), amount: 22 },
-        '2018-07-17': { dateDayjs: dayjs('2018-07-17'), amount: 22 },
-        '2018-07-18': { dateDayjs: dayjs('2018-07-18'), amount: 33 },
-        '2018-07-19': { dateDayjs: dayjs('2018-07-19'), amount: 33 },
-        '2018-07-20': { dateDayjs: dayjs('2018-07-20'), amount: 33 },
-        '2018-07-21': { dateDayjs: dayjs('2018-07-21'), amount: 11 },
-        '2018-07-22': { dateDayjs: dayjs('2018-07-22'), amount: 11 },
-        '2018-07-23': { dateDayjs: dayjs('2018-07-23'), amount: 11 },
-        '2018-07-24': { dateDayjs: dayjs('2018-07-24'), amount: 11 },
-        '2018-07-25': { dateDayjs: dayjs('2018-07-25'), amount: 11 },
-      };
+      const schedule = [
+        { dateDayjs: dayjs('2018-07-10'), amount: 11 },
+        { dateDayjs: dayjs('2018-07-11'), amount: 11 },
+        { dateDayjs: dayjs('2018-07-12'), amount: 22 },
+        { dateDayjs: dayjs('2018-07-13'), amount: 22 },
+        { dateDayjs: dayjs('2018-07-14'), amount: 22 },
+        { dateDayjs: dayjs('2018-07-15'), amount: 22 },
+        { dateDayjs: dayjs('2018-07-16'), amount: 22 },
+        { dateDayjs: dayjs('2018-07-17'), amount: 22 },
+        { dateDayjs: dayjs('2018-07-18'), amount: 33 },
+        { dateDayjs: dayjs('2018-07-19'), amount: 33 },
+        { dateDayjs: dayjs('2018-07-20'), amount: 33 },
+        { dateDayjs: dayjs('2018-07-21'), amount: 11 },
+        { dateDayjs: dayjs('2018-07-22'), amount: 11 },
+        { dateDayjs: dayjs('2018-07-23'), amount: 11 },
+        { dateDayjs: dayjs('2018-07-24'), amount: 11 },
+        { dateDayjs: dayjs('2018-07-25'), amount: 11 },
+      ];
       const result = reduceFeeSchedule(schedule);
       expect(result.length).toBe(4);
       expect(result[0].from).toBe('2018-07-10');
@@ -212,13 +212,13 @@ describe('cancellation-fees', () => {
     });
 
     it('should work for a consistent amount over the whole period', () => {
-      const schedule = {
-        '2018-07-10': { dateDayjs: dayjs('2018-07-10'), amount: 11 },
-        '2018-07-11': { dateDayjs: dayjs('2018-07-11'), amount: 11 },
-        '2018-07-12': { dateDayjs: dayjs('2018-07-12'), amount: 11 },
-        '2018-07-13': { dateDayjs: dayjs('2018-07-13'), amount: 11 },
-        '2018-07-14': { dateDayjs: dayjs('2018-07-14'), amount: 11 },
-      };
+      const schedule = [
+        { dateDayjs: dayjs('2018-07-10'), amount: 11 },
+        { dateDayjs: dayjs('2018-07-11'), amount: 11 },
+        { dateDayjs: dayjs('2018-07-12'), amount: 11 },
+        { dateDayjs: dayjs('2018-07-13'), amount: 11 },
+        { dateDayjs: dayjs('2018-07-14'), amount: 11 },
+      ];
       const result = reduceFeeSchedule(schedule);
       expect(result.length).toBe(1);
       expect(result[0].from).toBe('2018-07-10');

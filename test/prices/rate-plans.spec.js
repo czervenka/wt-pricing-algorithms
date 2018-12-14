@@ -43,7 +43,7 @@ describe('prices.rate-plans', () => {
         to: '2015-10-10',
       };
       const result = selectApplicableRatePlans(
-        roomTypes[1],
+        roomTypes[1].id,
         ratePlans,
         bookingDateDayjs,
         arrivalDateDayjs,
@@ -59,7 +59,7 @@ describe('prices.rate-plans', () => {
         to: '2015-10-10',
       };
       const result = selectApplicableRatePlans(
-        roomTypes[1],
+        roomTypes[1].id,
         ratePlans,
         bookingDateDayjs,
         arrivalDateDayjs,
@@ -70,7 +70,7 @@ describe('prices.rate-plans', () => {
 
     it('should return the only fitting rate plan', () => {
       const result = selectApplicableRatePlans(
-        roomTypes[1],
+        roomTypes[1].id,
         ratePlans,
         bookingDateDayjs,
         arrivalDateDayjs,
@@ -83,7 +83,7 @@ describe('prices.rate-plans', () => {
     it('should return rate plan without availableForTravel', () => {
       ratePlans[0].availableForTravel = undefined;
       const result = selectApplicableRatePlans(
-        roomTypes[1],
+        roomTypes[1].id,
         ratePlans,
         bookingDateDayjs,
         arrivalDateDayjs,
@@ -96,7 +96,7 @@ describe('prices.rate-plans', () => {
     it('should return rate plan without availableForReservation', () => {
       ratePlans[0].availableForReservation = undefined;
       const result = selectApplicableRatePlans(
-        roomTypes[1],
+        roomTypes[1].id,
         ratePlans,
         bookingDateDayjs,
         arrivalDateDayjs,
@@ -121,7 +121,7 @@ describe('prices.rate-plans', () => {
         },
       };
       const result = selectApplicableRatePlans(
-        roomTypes[1],
+        roomTypes[1].id,
         ratePlans,
         bookingDateDayjs,
         arrivalDateDayjs,
@@ -148,7 +148,7 @@ describe('prices.rate-plans', () => {
         },
       ];
       const result = selectApplicableRatePlans(
-        roomTypes[1],
+        roomTypes[1].id,
         ratePlans,
         bookingDateDayjs,
         arrivalDateDayjs,
@@ -161,7 +161,7 @@ describe('prices.rate-plans', () => {
 
     it('should not use a rate plan without currency when fallbackCurrency does not match the preferred currency', () => {
       const result = selectApplicableRatePlans(
-        roomTypes[1],
+        roomTypes[1].id,
         ratePlans,
         bookingDateDayjs,
         arrivalDateDayjs,
@@ -220,7 +220,7 @@ describe('prices.rate-plans', () => {
             },
           };
           const result = selectApplicableRatePlans(
-            roomTypes[1],
+            roomTypes[1].id,
             ratePlans,
             dayjs(currentArrivalDateDayjs).subtract(19, 'days'),
             currentArrivalDateDayjs,
@@ -236,7 +236,7 @@ describe('prices.rate-plans', () => {
             },
           };
           const result = selectApplicableRatePlans(
-            roomTypes[1],
+            roomTypes[1].id,
             ratePlans,
             dayjs(currentArrivalDateDayjs).subtract(4, 'days'),
             currentArrivalDateDayjs,
@@ -253,7 +253,7 @@ describe('prices.rate-plans', () => {
             },
           };
           const result = selectApplicableRatePlans(
-            roomTypes[1],
+            roomTypes[1].id,
             ratePlans,
             dayjs(currentArrivalDateDayjs).subtract(6, 'days'),
             currentArrivalDateDayjs,
@@ -271,7 +271,7 @@ describe('prices.rate-plans', () => {
             },
           };
           const result = selectApplicableRatePlans(
-            roomTypes[1],
+            roomTypes[1].id,
             ratePlans,
             bookingDateDayjs,
             currentArrivalDateDayjs,
@@ -287,7 +287,7 @@ describe('prices.rate-plans', () => {
             },
           };
           const result = selectApplicableRatePlans(
-            roomTypes[1],
+            roomTypes[1].id,
             ratePlans,
             bookingDateDayjs,
             currentArrivalDateDayjs,
@@ -304,7 +304,7 @@ describe('prices.rate-plans', () => {
             },
           };
           const result = selectApplicableRatePlans(
-            roomTypes[1],
+            roomTypes[1].id,
             ratePlans,
             bookingDateDayjs,
             currentArrivalDateDayjs,

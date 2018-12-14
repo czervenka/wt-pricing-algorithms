@@ -1,20 +1,32 @@
 import dayjs from 'dayjs';
 
-export const normalizePolicyDates = (todayDayjs, arrivalDayjs,
+/**
+ * Sorts out real dates for cancellation policies by applying
+ * deadline where possible.
+ *
+ * @param  {dayjs} bookingDateDayjs is used to determine how far in the
+ * future will the actual stay happen.
+ * @param  {dayjs} arrivalDayjs is a date of arrival
+ * @param  {Array<Object>} cancellationPolicies List of all declared
+ * policies
+ * @return {Array<object>} Normalized list of policies where each
+ * record contains from, to, and an appropriate amount.
+ */
+export const normalizePolicyDates = (bookingDateDayjs, arrivalDayjs,
   cancellationPolicies) => cancellationPolicies
   .filter((cp) => {
     if (cp.from && dayjs(cp.from).isAfter(arrivalDayjs)) {
       return false;
     }
 
-    if (cp.to && dayjs(cp.to).isBefore(todayDayjs)) {
+    if (cp.to && dayjs(cp.to).isBefore(bookingDateDayjs)) {
       return false;
     }
     return true;
   })
   .map((cp) => {
     const deadlineStartDayjs = dayjs(arrivalDayjs).subtract(cp.deadline, 'days');
-    const fromOptions = [todayDayjs, deadlineStartDayjs];
+    const fromOptions = [bookingDateDayjs, deadlineStartDayjs];
     if (cp.from) {
       fromOptions.push(dayjs(cp.from));
     }
@@ -33,13 +45,27 @@ export const normalizePolicyDates = (todayDayjs, arrivalDayjs,
       from,
       to,
       amount: cp.amount,
-      deadline: cp.deadline,
     };
   });
 
-export const createFeeSchedule = (todayDayjs, arrivalDayjs,
+/**
+ * Determines the most benefitial cancellation fee for a hotel
+ * for every day between `bookingDateDayjs` and `arrivalDayjs`
+ * (inclusive on both sides).
+ *
+ * @param  {dayjs} bookingDateDayjs is used to determine where to start.
+ * @param  {dayjs} arrivalDayjs is a date of arrival
+ * @param  {Array<Object>} normalizedCancellationPolicies result of
+ * `normalizePolicyDates`
+ * @param  {Number} defaultCancellationAmount a default that is used
+ * in case there is no special policy applicable to any given date.
+ * @return {Array<Object>} A list of fees best for a hotel. Items
+ * contain an object containing dateDayjs and amount and are ordered
+ * by date in an ascending order.
+ */
+export const createFeeSchedule = (bookingDateDayjs, arrivalDayjs,
   normalizedCancellationPolicies, defaultCancellationAmount) => {
-  // We have to cover from today to the date of arrival (including)
+  // We have to cover from the booking date to the date of arrival (including)
   let currentPolicy;
   let currentDate;
   const cancellationFees = {};
@@ -59,7 +85,7 @@ export const createFeeSchedule = (todayDayjs, arrivalDayjs,
     }
   }
 
-  currentDate = dayjs(todayDayjs);
+  currentDate = dayjs(bookingDateDayjs);
   while (!currentDate.isAfter(arrivalDayjs)) {
     if (cancellationFees[currentDate.format('YYYY-MM-DD')] === undefined || cancellationFees[currentDate.format('YYYY-MM-DD')].amount === undefined) {
       cancellationFees[currentDate.format('YYYY-MM-DD')] = {
@@ -69,20 +95,32 @@ export const createFeeSchedule = (todayDayjs, arrivalDayjs,
     }
     currentDate = currentDate.add(1, 'day');
   }
-
-  return cancellationFees;
+  return Object.values(cancellationFees)
+    .sort((a, b) => (a.dateDayjs.isBefore(b.dateDayjs) ? -1 : 1));
 };
 
-export const reduceFeeSchedule = (feeSchedule) => {
-  const orderedSchedule = Object.values(feeSchedule)
-    .sort((a, b) => (a.dateDayjs.isBefore(b.dateDayjs) ? -1 : 1));
+/**
+ * Compacts a fee schedule into continuous intervals
+ * with the same amount.
+ *
+ * @param  {Array<Object>} feeSchedule ordered result of createFeeSchedule
+ * @return {Array<Object>} List of periods, each containing from,
+ * to and amount.
+ */
+export const reduceFeeSchedule = (orderedSchedule) => {
   const periods = [];
-  let currentPeriod = { from: orderedSchedule[0].dateDayjs.format('YYYY-MM-DD'), amount: orderedSchedule[0].amount };
+  let currentPeriod = {
+    from: orderedSchedule[0].dateDayjs.format('YYYY-MM-DD'),
+    amount: orderedSchedule[0].amount,
+  };
   for (let i = 0; i < orderedSchedule.length; i += 1) {
     if (orderedSchedule[i].amount !== currentPeriod.amount) {
       currentPeriod.to = orderedSchedule[i].dateDayjs.subtract(1, 'day').format('YYYY-MM-DD');
       periods.push(currentPeriod);
-      currentPeriod = { from: orderedSchedule[i].dateDayjs.format('YYYY-MM-DD'), amount: orderedSchedule[i].amount };
+      currentPeriod = {
+        from: orderedSchedule[i].dateDayjs.format('YYYY-MM-DD'),
+        amount: orderedSchedule[i].amount,
+      };
     }
   }
   // close the dangling period
@@ -91,27 +129,42 @@ export const reduceFeeSchedule = (feeSchedule) => {
   return periods;
 };
 
-export const computeCancellationFees = (todayDayjs, arrivalDayjs,
+/**
+ * Determines the cancellation fees for any given arrival date
+ * in the future.
+ *
+ * @param  {any} bookingDate anything parseable by dayjs marking
+ * a date on which the booking is happening
+ * @param  {any} arrivalDate anything parseable by dayjs marking
+ * a date on which the consumer will arrive
+ * @param  {Array<Object>} cancellationPolicies list of policies as defined
+ * in https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L129
+ * @param  {Number} defaultCancellationAmount fallback amount as defined in
+ * https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L124
+ * @return {Array<Object>} Result of `reduceFeeSchedule`
+ */
+export const computeCancellationFees = (bookingDate, arrivalDate,
   cancellationPolicies, defaultCancellationAmount) => {
-  const todayDayjsSOD = dayjs(todayDayjs).set('hour', 0).set('minute', 0).set('second', 0);
-  const arrivalDayjsEOD = dayjs(arrivalDayjs).set('hour', 23).set('minute', 59).set('second', 59);
+  // We need to cover the whole days
+  const bookingDateDayjsSOD = dayjs(bookingDate).set('hour', 0).set('minute', 0).set('second', 0);
+  const arrivalDayjsEOD = dayjs(arrivalDate).set('hour', 23).set('minute', 59).set('second', 59);
   // Fallback to defaultCancellationAmount
   if (!cancellationPolicies || !cancellationPolicies.length) {
     return [
       {
-        from: todayDayjs.format('YYYY-MM-DD'),
-        to: arrivalDayjs.format('YYYY-MM-DD'),
+        from: bookingDateDayjsSOD.format('YYYY-MM-DD'),
+        to: arrivalDayjsEOD.format('YYYY-MM-DD'),
         amount: defaultCancellationAmount,
       },
     ];
   }
   const normalizedPolicies = normalizePolicyDates(
-    todayDayjsSOD,
+    bookingDateDayjsSOD,
     arrivalDayjsEOD,
     cancellationPolicies,
   );
   return reduceFeeSchedule(createFeeSchedule(
-    todayDayjsSOD,
+    bookingDateDayjsSOD,
     arrivalDayjsEOD,
     normalizedPolicies,
     defaultCancellationAmount,

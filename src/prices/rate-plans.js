@@ -1,5 +1,15 @@
 import dayjs from 'dayjs';
 
+/**
+ * Picks rate plans modifiers applicable under given conditions.
+ *
+ * @param  {Array<Object>} modifiers List of rate plan modifiers as
+ * defined in https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L296
+ * @param  {dayjs} dateDayjs A date for which we want to apply modifiers
+ * @param  {Number} lengthOfStay
+ * @param  {Number} numberOfGuests
+ * @return {Array<Object>} List of modifiers that can be applied
+ */
 export const selectApplicableModifiers = (modifiers, dateDayjs, lengthOfStay, numberOfGuests) => {
   if (!modifiers || !modifiers.length) {
     return [];
@@ -60,6 +70,17 @@ export const selectApplicableModifiers = (modifiers, dateDayjs, lengthOfStay, nu
   return applicableModifiers.filter(mod => elementsToDrop.indexOf(mod) === -1);
 };
 
+/**
+ * Selects a modifier that is most in favour of a guest
+ * with given age. If no age based modifier is applicable,
+ * the best one from non-specific modifiers is used.
+ *
+ * @param  {Array<Object>} modifiers List of rate plan modifiers as
+ * defined in https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L296
+ * @param  {Number} age Guest's age
+ * @return {Object} The modifier with the best rate in
+ * favour of a guest.
+ */
 export const selectBestGuestModifier = (modifiers, age) => {
   const ageModifiers = modifiers.filter(mod => mod.conditions.maxAge !== undefined);
   const selectedAgeModifier = ageModifiers.reduce((best, current) => {
@@ -86,11 +107,35 @@ export const selectBestGuestModifier = (modifiers, age) => {
   return genericModifiers[0];
 };
 
-export const selectApplicableRatePlans = (roomType, ratePlans, bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, fallbackCurrency, preferredCurrency = null) => {
+/**
+ * Filters out rate plans that cannot be used under
+ * given conditions.
+ *
+ * @param  {string} roomTypeId
+ * @param  {Array<Object>} ratePlans list of rate plans as defined in
+ * https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L212
+ * @param  {dayjs} bookingDateDayjs
+ * @param  {dayjs} arrivalDateDayjs
+ * @param  {dayjs} departureDateDayjs
+ * @param  {string} fallbackCurrency used when rate plans does not have
+ * a currency defined
+ * @param  {string|null|undefined} preferredCurrency You can limit the results to
+ * this single currency for faster processing
+ * @return {Array<Object>} List of usable rate plans.
+ */
+export const selectApplicableRatePlans = (
+  roomTypeId,
+  ratePlans,
+  bookingDateDayjs,
+  arrivalDateDayjs,
+  departureDateDayjs,
+  fallbackCurrency,
+  preferredCurrency = null
+) => {
   const lengthOfStay = Math.abs(arrivalDateDayjs.diff(departureDateDayjs, 'days'));
   return ratePlans.filter((rp) => {
     // Rate plan is not tied to this room type
-    if (rp.roomTypeIds.indexOf(roomType.id) === -1) {
+    if (rp.roomTypeIds.indexOf(roomTypeId) === -1) {
       return false;
     }
 
@@ -101,7 +146,7 @@ export const selectApplicableRatePlans = (roomType, ratePlans, bookingDateDayjs,
 
     // Filter out rate plans by dates
     if (rp.availableForReservation) {
-    // Rate plan cannot be used today
+    // Rate plan cannot be used for this date
       const availableForReservationFrom = dayjs(rp.availableForReservation.from);
       const availableForReservationTo = dayjs(rp.availableForReservation.to);
       if (availableForReservationTo.isBefore(bookingDateDayjs) ||
@@ -152,7 +197,6 @@ export const selectApplicableRatePlans = (roomType, ratePlans, bookingDateDayjs,
         }
       }
     }
-
     return true;
   });
 };
