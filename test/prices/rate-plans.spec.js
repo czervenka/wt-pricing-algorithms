@@ -6,47 +6,44 @@ import {
 } from '../../src/prices/rate-plans';
 
 describe('prices.rate-plans', () => {
-  let arrivalDateDayjs, departureDateDayjs;
-  let hotel;
+  let arrivalDateDayjs, departureDateDayjs, fallbackCurrency;
+  let ratePlans, roomTypes;
 
   beforeEach(() => {
     arrivalDateDayjs = dayjs('2018-01-03');
     departureDateDayjs = dayjs('2018-01-05');
-    hotel = {
-      id: '0x933198455e38925bccb4bfe9fb59bac31d00b4d3',
-      currency: 'CZK',
-      ratePlans: {
-        rpa: {
-          id: 'rpa',
-          price: 100,
-          roomTypeIds: ['rtb'],
-          availableForReservation: {
-            from: '2018-01-01',
-            to: '2020-12-31',
-          },
-          availableForTravel: {
-            from: '2016-06-01',
-            to: '2020-12-31',
-          },
+    fallbackCurrency = 'CZK';
+    ratePlans = [
+      {
+        id: 'rpa',
+        price: 100,
+        roomTypeIds: ['rtb'],
+        availableForReservation: {
+          from: '2018-01-01',
+          to: '2020-12-31',
+        },
+        availableForTravel: {
+          from: '2016-06-01',
+          to: '2020-12-31',
         },
       },
-      roomTypes: {
-        rta: { id: 'rta' },
-        rtb: { id: 'rtb' },
-      },
-    };
+    ];
+    roomTypes = [
+      { id: 'rta' },
+      { id: 'rtb' },
+    ];
   });
 
   describe('selectApplicableRatePlans', () => {
     it('should not use a rate plan if it is not available for reservation based on current date', () => {
       // make sure the rate plan for rtb does not work for today
-      hotel.ratePlans.rpa.availableForReservation = {
+      ratePlans[0].availableForReservation = {
         from: '2015-01-01',
         to: '2015-10-10',
       };
       const result = selectApplicableRatePlans(
-        hotel.roomTypes.rtb,
-        [hotel.ratePlans.rpa],
+        roomTypes[1],
+        ratePlans,
         arrivalDateDayjs,
         departureDateDayjs,
       );
@@ -55,13 +52,13 @@ describe('prices.rate-plans', () => {
 
     it('should not use a rate plan if it is not available for travel based on guest data', () => {
       // make sure the rate plan for rtb does not work for current estimates.guestData
-      hotel.ratePlans.rpa.availableForTravel = {
+      ratePlans[0].availableForTravel = {
         from: '2015-01-01',
         to: '2015-10-10',
       };
       const result = selectApplicableRatePlans(
-        hotel.roomTypes.rtb,
-        [hotel.ratePlans.rpa],
+        roomTypes[1],
+        ratePlans,
         arrivalDateDayjs,
         departureDateDayjs,
       );
@@ -70,8 +67,8 @@ describe('prices.rate-plans', () => {
 
     it('should return the only fitting rate plan', () => {
       const result = selectApplicableRatePlans(
-        hotel.roomTypes.rtb,
-        [hotel.ratePlans.rpa],
+        roomTypes[1],
+        ratePlans,
         arrivalDateDayjs,
         departureDateDayjs,
       );
@@ -80,10 +77,10 @@ describe('prices.rate-plans', () => {
     });
 
     it('should return rate plan without availableForTravel', () => {
-      hotel.ratePlans.rpa.availableForTravel = undefined;
+      ratePlans[0].availableForTravel = undefined;
       const result = selectApplicableRatePlans(
-        hotel.roomTypes.rtb,
-        [hotel.ratePlans.rpa],
+        roomTypes[1],
+        ratePlans,
         arrivalDateDayjs,
         departureDateDayjs,
       );
@@ -92,10 +89,10 @@ describe('prices.rate-plans', () => {
     });
 
     it('should return rate plan without availableForReservation', () => {
-      hotel.ratePlans.rpa.availableForReservation = undefined;
+      ratePlans[0].availableForReservation = undefined;
       const result = selectApplicableRatePlans(
-        hotel.roomTypes.rtb,
-        [hotel.ratePlans.rpa],
+        roomTypes[1],
+        ratePlans,
         arrivalDateDayjs,
         departureDateDayjs,
       );
@@ -104,7 +101,7 @@ describe('prices.rate-plans', () => {
     });
 
     it('should return multiple fitting rate plans', () => {
-      hotel.ratePlans.rpb = {
+      ratePlans[1] = {
         id: 'rpb',
         price: 60,
         roomTypeIds: ['rtb'],
@@ -118,12 +115,52 @@ describe('prices.rate-plans', () => {
         },
       };
       const result = selectApplicableRatePlans(
-        hotel.roomTypes.rtb,
-        Object.values(hotel.ratePlans),
+        roomTypes[1],
+        ratePlans,
         arrivalDateDayjs,
         departureDateDayjs,
       );
       expect(result.length).toBe(2);
+    });
+
+    it('should not use a rate plan if it is not in the preferred currency', () => {
+      ratePlans = [
+        {
+          id: 'rpa',
+          price: 100,
+          currency: 'USD',
+          roomTypeIds: ['rtb'],
+          availableForReservation: {
+            from: '2018-01-01',
+            to: '2020-12-31',
+          },
+          availableForTravel: {
+            from: '2016-06-01',
+            to: '2020-12-31',
+          },
+        },
+      ];
+      const result = selectApplicableRatePlans(
+        roomTypes[1],
+        ratePlans,
+        arrivalDateDayjs,
+        departureDateDayjs,
+        fallbackCurrency,
+        'EUR'
+      );
+      expect(result.length).toBe(0);
+    });
+
+    it('should not use a rate plan without currency when fallbackCurrency does not match the preferred currency', () => {
+      const result = selectApplicableRatePlans(
+        roomTypes[1],
+        ratePlans,
+        arrivalDateDayjs,
+        departureDateDayjs,
+        fallbackCurrency,
+        'EUR'
+      );
+      expect(result.length).toBe(0);
     });
 
     describe('restrictions', () => {
@@ -174,7 +211,7 @@ describe('prices.rate-plans', () => {
             },
           };
           const result = selectApplicableRatePlans(
-            hotel.roomTypes.rtb,
+            roomTypes[1],
             ratePlans,
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
@@ -189,7 +226,7 @@ describe('prices.rate-plans', () => {
             },
           };
           const result = selectApplicableRatePlans(
-            hotel.roomTypes.rtb,
+            roomTypes[1],
             ratePlans,
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
@@ -205,7 +242,7 @@ describe('prices.rate-plans', () => {
             },
           };
           const result = selectApplicableRatePlans(
-            hotel.roomTypes.rtb,
+            roomTypes[1],
             ratePlans,
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
@@ -222,7 +259,7 @@ describe('prices.rate-plans', () => {
             },
           };
           const result = selectApplicableRatePlans(
-            hotel.roomTypes.rtb,
+            roomTypes[1],
             ratePlans,
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
@@ -237,7 +274,7 @@ describe('prices.rate-plans', () => {
             },
           };
           const result = selectApplicableRatePlans(
-            hotel.roomTypes.rtb,
+            roomTypes[1],
             ratePlans,
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
@@ -253,7 +290,7 @@ describe('prices.rate-plans', () => {
             },
           };
           const result = selectApplicableRatePlans(
-            hotel.roomTypes.rtb,
+            roomTypes[1],
             ratePlans,
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,

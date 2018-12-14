@@ -86,12 +86,17 @@ export const selectBestGuestModifier = (modifiers, age) => {
   return genericModifiers[0];
 };
 
-export const selectApplicableRatePlans = (roomType, ratePlans, arrivalDateDayjs, departureDateDayjs) => {
+export const selectApplicableRatePlans = (roomType, ratePlans, arrivalDateDayjs, departureDateDayjs, fallbackCurrency, preferredCurrency = null) => {
   const now = dayjs();
   const lengthOfStay = Math.abs(arrivalDateDayjs.diff(departureDateDayjs, 'days'));
   return ratePlans.filter((rp) => {
     // Rate plan is not tied to this room type
     if (rp.roomTypeIds.indexOf(roomType.id) === -1) {
+      return false;
+    }
+
+    // Rate plan has a different currency than requested.
+    if (preferredCurrency && (rp.currency || fallbackCurrency) !== preferredCurrency) {
       return false;
     }
 
