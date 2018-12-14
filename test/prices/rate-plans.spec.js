@@ -222,7 +222,7 @@ describe('prices.rate-plans', () => {
           const result = selectApplicableRatePlans(
             roomTypes[1],
             ratePlans,
-            bookingDateDayjs,
+            dayjs(currentArrivalDateDayjs).subtract(19, 'days'),
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
           );
@@ -238,7 +238,7 @@ describe('prices.rate-plans', () => {
           const result = selectApplicableRatePlans(
             roomTypes[1],
             ratePlans,
-            bookingDateDayjs,
+            dayjs(currentArrivalDateDayjs).subtract(4, 'days'),
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
           );
@@ -255,7 +255,7 @@ describe('prices.rate-plans', () => {
           const result = selectApplicableRatePlans(
             roomTypes[1],
             ratePlans,
-            bookingDateDayjs,
+            dayjs(currentArrivalDateDayjs).subtract(6, 'days'),
             currentArrivalDateDayjs,
             currentDepartureDateDayjs,
           );
