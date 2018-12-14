@@ -84,7 +84,10 @@ export const computeStayPrices = (arrivalDateDayjs, departureDateDayjs, guests, 
   return dailyPrices;
 };
 
-export const computePrices = (bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, guests, roomTypes, ratePlans, fallbackCurrency, preferredCurrency = null) => {
+export const computePrices = (bookingDate, arrivalDate, departureDate, guests, roomTypes, ratePlans, fallbackCurrency, preferredCurrency = null) => {
+  const bookingDateDayjs = dayjs(bookingDate);
+  const arrivalDateDayjs = dayjs(arrivalDate);
+  const departureDateDayjs = dayjs(departureDate);
   return roomTypes.map((roomType) => {
     const applicableRatePlans = selectApplicableRatePlans(
       roomType, ratePlans, bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, fallbackCurrency, preferredCurrency
