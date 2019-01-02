@@ -37,7 +37,7 @@ export const indexAvailability = (availability) => {
  * Aggregates total quantity of available room types during given period.
  * If data for any day (including arrival and departure) is missing, `undefined`
  * is returned, otherwise a number is returned.
- * 
+ *
  * @param  {mixed} arrivalDate anything parseable by dayjs
  * @param  {mixed} departureDate anything parseable by dayjs
  * @param  {number} numberOfGuests
