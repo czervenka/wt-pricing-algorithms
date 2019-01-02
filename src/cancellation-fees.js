@@ -133,9 +133,9 @@ export const reduceFeeSchedule = (orderedSchedule) => {
  * Determines the cancellation fees for any given arrival date
  * in the future.
  *
- * @param  {any} bookingDate anything parseable by dayjs marking
+ * @param  {mixed} bookingDate anything parseable by dayjs marking
  * a date on which the booking is happening
- * @param  {any} arrivalDate anything parseable by dayjs marking
+ * @param  {mixed} arrivalDate anything parseable by dayjs marking
  * a date on which the consumer will arrive
  * @param  {Array<Object>} cancellationPolicies list of policies as defined
  * in https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L129
