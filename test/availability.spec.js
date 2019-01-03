@@ -76,7 +76,6 @@ describe('availability', () => {
 
     it('should return availability for all roomTypes', () => {
       const availability = computeAvailability(arrivalDate, departureDate, 1, roomTypes, indexedAvailability);
-      console.log(availability);
       expect(availability.length).toBe(3);
     });
 
@@ -154,6 +153,19 @@ describe('availability', () => {
       expect(availability.find((a) => a.roomTypeId === 'rta')).toHaveProperty('quantity', 0);
     });
 
+    it('should not apply occupancy if number of guests fit', () => {
+      const availability = computeAvailability(arrivalDate, departureDate, 4, [
+        { id: 'rta',
+          occupancy: {
+            min: 2,
+            max: 5,
+          },
+        },
+      ], indexedAvailability);
+      expect(availability.find((a) => a.roomTypeId === 'rta')).toHaveProperty('roomTypeId', 'rta');
+      expect(availability.find((a) => a.roomTypeId === 'rta')).toHaveProperty('quantity', 1);
+    });
+
     it('should apply noArrival restriction', () => {
       const availability = computeAvailability(arrivalDate, departureDate, 1, roomTypes, indexAvailability([
         availabilityRecord('rtb', '2018-01-03', 3, { noArrival: true }),
@@ -164,6 +176,16 @@ describe('availability', () => {
       expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('quantity', 0);
     });
 
+    it('should not apply noArrival on a non-first day of trip', () => {
+      const availability = computeAvailability(arrivalDate, departureDate, 1, roomTypes, indexAvailability([
+        availabilityRecord('rtb', '2018-01-03', 3),
+        availabilityRecord('rtb', '2018-01-04', 1, { noArrival: true }),
+        availabilityRecord('rtb', '2018-01-05', 0),
+      ]));
+      expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('roomTypeId', 'rtb');
+      expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('quantity', 1);
+    });
+
     it('should apply noDeparture restriction', () => {
       const availability = computeAvailability(arrivalDate, departureDate, 1, roomTypes, indexAvailability([
         availabilityRecord('rtb', '2018-01-03', 3),
@@ -172,6 +194,56 @@ describe('availability', () => {
       ]));
       expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('roomTypeId', 'rtb');
       expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('quantity', 0);
+    });
+
+    it('should not apply noDeparture on a non-last day of trip', () => {
+      const availability = computeAvailability(arrivalDate, departureDate, 1, roomTypes, indexAvailability([
+        availabilityRecord('rtb', '2018-01-03', 3),
+        availabilityRecord('rtb', '2018-01-04', 1, { noDeparture: true }),
+        availabilityRecord('rtb', '2018-01-05', 0),
+      ]));
+      expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('roomTypeId', 'rtb');
+      expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('quantity', 1);
+    });
+
+    it('should apply noArrival and noDeparture at the same time for a single day trip', () => {
+      const availability = computeAvailability('2018-01-04', '2018-01-04', 1, roomTypes, indexAvailability([
+        availabilityRecord('rtb', '2018-01-04', 1, { noDeparture: true, noArrival: true }),
+      ]));
+      expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('roomTypeId', 'rtb');
+      expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('quantity', 0);
+    });
+
+    describe('edge cases', () => {
+      it('should say 1 if 1 is set on a day of departure', () => {
+        const availability = computeAvailability(arrivalDate, departureDate, 1, roomTypes, indexAvailability([
+          availabilityRecord('rtb', '2018-01-03', 3),
+          availabilityRecord('rtb', '2018-01-04', 3),
+          availabilityRecord('rtb', '2018-01-05', 1),
+        ]));
+        expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('roomTypeId', 'rtb');
+        expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('quantity', 1);
+      });
+
+      it('should say 1 if 1 is set on a day of arrival', () => {
+        const availability = computeAvailability(arrivalDate, departureDate, 1, roomTypes, indexAvailability([
+          availabilityRecord('rtb', '2018-01-03', 1),
+          availabilityRecord('rtb', '2018-01-04', 3),
+          availabilityRecord('rtb', '2018-01-05', 3),
+        ]));
+        expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('roomTypeId', 'rtb');
+        expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('quantity', 1);
+      });
+
+      it('should say 0 if 0 is set on a day of arrival', () => {
+        const availability = computeAvailability(arrivalDate, departureDate, 1, roomTypes, indexAvailability([
+          availabilityRecord('rtb', '2018-01-03', 0),
+          availabilityRecord('rtb', '2018-01-04', 3),
+          availabilityRecord('rtb', '2018-01-05', 5),
+        ]));
+        expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('roomTypeId', 'rtb');
+        expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('quantity', 0);
+      });
     });
   });
 });
