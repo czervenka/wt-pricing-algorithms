@@ -16,14 +16,15 @@ import {
  * @param  {Number} lengthOfStay
  * @param  {dayjs} dateDayjs
  * @param  {Object} ratePlan
+ * @param  {string} currentCurrency
  * @return {currencyjs} Total amount for all of the guests
  */
-export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan) => {
+export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan, currentCurrency) => {
   const applicableModifiers = selectApplicableModifiers(
     ratePlan.modifiers, dateDayjs, lengthOfStay, guests.length
   );
   if (!applicableModifiers.length) {
-    return currencyjs(ratePlan.price).multiply(guests.length);
+    return currencyjs(ratePlan.price, { symbol: currentCurrency }).multiply(guests.length);
   }
 
   const guestPrices = [];
@@ -38,7 +39,7 @@ export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan) => 
     }
     guestPrices.push(ratePlan.price + adjustment);
   }
-  return guestPrices.reduce((a, b) => a.add(currencyjs(b)), currencyjs(0));
+  return guestPrices.reduce((a, b) => a.add(currencyjs(b, { symbol: currentCurrency })), currencyjs(0, { symbol: currentCurrency }));
 };
 
 /**
@@ -86,7 +87,7 @@ export const computeStayPrices = (arrivalDateDayjs, departureDateDayjs, guests, 
       // Deal with a rate plan ending sometimes during the stay
       if (currentDate >= availableForTravelFrom && currentDate <= availableForTravelTo) {
         const currentDailyPrice = computeDailyPrice(
-          guests, lengthOfStay, currentDate, currentRatePlan,
+          guests, lengthOfStay, currentDate, currentRatePlan, currentCurrency,
         );
 
         if (!bestDailyPrice[currentCurrency] ||
@@ -184,9 +185,9 @@ export const computePrices = (
 
     response.prices = Object.keys(dailyPrices).map((currency) => {
       return {
-        currency: currency,
+        currency,
         total: dailyPrices[currency]
-          .reduce((a, b) => a.add(currencyjs(b)), currencyjs(0)),
+          .reduce((a, b) => a.add(currencyjs(b, { symbol: currency })), currencyjs(0, { symbol: currency })),
       };
     });
 

@@ -152,6 +152,7 @@ modifier for every guest.
 -   `lengthOfStay` **[Number][28]** 
 -   `dateDayjs` **dayjs** 
 -   `ratePlan` **[Object][27]** 
+-   `currentCurrency` **[string][31]** 
 
 Returns **currencyjs** Total amount for all of the guests
 

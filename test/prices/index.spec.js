@@ -47,7 +47,8 @@ describe('prices.index', () => {
       const rtb = result.find(e => e.id === 'rtb');
       expect(rtb).toHaveProperty('prices');
       expect(rtb.prices.length).toBe(1);
-      expect(rtb.prices[0]).toHaveProperty('currency', 'CZK');
+      expect(rtb.prices[0].currency).toBe('CZK');
+      expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'CZK');
       expect(rtb.prices[0].total.format()).toBe(currency(200).format());
     });
 
@@ -70,9 +71,11 @@ describe('prices.index', () => {
       const rtb = result.find(e => e.id === 'rtb');
       expect(rtb).toHaveProperty('prices');
       expect(rtb.prices.length).toBe(2);
-      expect(rtb.prices[0]).toHaveProperty('currency', 'CZK');
+      expect(rtb.prices[0].currency).toBe('CZK');
+      expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'CZK');
       expect(rtb.prices[0].total.format()).toBe(currency(200).format());
-      expect(rtb.prices[1]).toHaveProperty('currency', 'EUR');
+      expect(rtb.prices[1].currency).toBe('EUR');
+      expect(rtb.prices[1].total).toHaveProperty('s.symbol', 'EUR');
       expect(rtb.prices[1].total.format()).toBe(currency(66).format());
     });
   });
@@ -101,7 +104,9 @@ describe('prices.index', () => {
       expect(result).toHaveProperty(fallbackCurrency);
       expect(result[fallbackCurrency].length).toBe(2);
       expect(result[fallbackCurrency][0].format()).toBe(currency(60).format());
+      expect(result[fallbackCurrency][0]).toHaveProperty('s.symbol', fallbackCurrency);
       expect(result[fallbackCurrency][1].format()).toBe(currency(60).format());
+      expect(result[fallbackCurrency][1]).toHaveProperty('s.symbol', fallbackCurrency);
     });
 
     it('should return the lowest price if no modifiers are present and multiple rate plans fit (one without availableForTravel)', () => {
@@ -119,7 +124,9 @@ describe('prices.index', () => {
       expect(result).toHaveProperty(fallbackCurrency);
       expect(result[fallbackCurrency].length).toBe(2);
       expect(result[fallbackCurrency][0].format()).toBe(currency(60).format());
+      expect(result[fallbackCurrency][0]).toHaveProperty('s.symbol', fallbackCurrency);
       expect(result[fallbackCurrency][1].format()).toBe(currency(60).format());
+      expect(result[fallbackCurrency][1]).toHaveProperty('s.symbol', fallbackCurrency);
     });
 
     it('should combine multiple rate plans if the stay range hits both of them', () => {
@@ -162,6 +169,14 @@ describe('prices.index', () => {
       expect(result[fallbackCurrency][5].format()).toBe(currency(3 * 60).format()); // 10-07
       expect(result[fallbackCurrency][6].format()).toBe(currency(3 * 60).format()); // 10-08
       expect(result[fallbackCurrency][7].format()).toBe(currency(3 * 60).format()); // 10-09
+      expect(result[fallbackCurrency][0].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][1].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][2].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][3].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][4].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][5].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][6].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][7].s.symbol).toBe(fallbackCurrency);
     });
 
     it('should combine multiple rate plans if the stay range hits both of them (one without availableForTravel)', () => {
@@ -196,6 +211,14 @@ describe('prices.index', () => {
       expect(result[fallbackCurrency][5].format()).toBe(currency(3 * 73).format()); // 10-07
       expect(result[fallbackCurrency][6].format()).toBe(currency(3 * 73).format()); // 10-08
       expect(result[fallbackCurrency][7].format()).toBe(currency(3 * 73).format()); // 10-09
+      expect(result[fallbackCurrency][0].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][1].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][2].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][3].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][4].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][5].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][6].s.symbol).toBe(fallbackCurrency);
+      expect(result[fallbackCurrency][7].s.symbol).toBe(fallbackCurrency);
     });
 
     it('should not return an estimate if even a single date of a stay is not covered by a valid rate plan', () => {
@@ -289,6 +312,14 @@ describe('prices.index', () => {
       expect(result.EUR[5].format()).toBe(currency(21).format());
       expect(result.EUR[6].format()).toBe(currency(21).format());
       expect(result.EUR[7].format()).toBe(currency(21).format());
+      expect(result.EUR[0].s.symbol).toBe('EUR');
+      expect(result.EUR[1].s.symbol).toBe('EUR');
+      expect(result.EUR[2].s.symbol).toBe('EUR');
+      expect(result.EUR[3].s.symbol).toBe('EUR');
+      expect(result.EUR[4].s.symbol).toBe('EUR');
+      expect(result.EUR[5].s.symbol).toBe('EUR');
+      expect(result.EUR[6].s.symbol).toBe('EUR');
+      expect(result.EUR[7].s.symbol).toBe('EUR');
     });
   });
 
