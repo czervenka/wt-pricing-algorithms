@@ -114,91 +114,120 @@ export const computeStayPrices = (arrivalDateDayjs, departureDateDayjs, guests, 
   return dailyPrices;
 };
 
-/**
- * Computes the best prices for all room types
- * for given period of time and a party of guests.
- *
- * @param  {mixed} bookingDate anything parseable by dayjs
- * @param  {mixed} arrivalDate anything parseable by dayjs
- * @param  {mixed} departureDate anything parseable by dayjs
- * @param  {Array<Object>} guests List of information about guests
- * @param  {Array<Object>} roomTypes List of room types as defined
- * in https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L136
- * @param  {Array<Object>} ratePlans List of rate plans as defined in
- * https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L212
- * @param  {string} fallbackCurrency currency used when a rate plan has
- * no currency specified
- * @param  {string} preferredCurrency you can limit the results only
- * to this currency
- * @return {Array} List of prices for every room type. Every item in
- * the array contains an id (roomTypeId) and a list of `prices` for all
- * applicable currencies such as this. The total sum is an instance
- * of currencyjs. In case of no applicable rate plans, the prices array
- * is empty.
- * ```
- * [
- *   {
- *     "id": "single-bed",
- *     "prices": [
- *       {
- *         "currency": "EUR",
- *         "total": 123.12
- *       },
- *       {
- *         "currency": "USD",
- *         "total": 130
- *       }
- *     ]
- *   }
- * ]
- * ```
- */
-export const computePrices = (
-  bookingDate,
-  arrivalDate,
-  departureDate,
-  guests,
-  roomTypes,
-  ratePlans,
-  fallbackCurrency,
-  preferredCurrency = null
-) => {
-  const bookingDateDayjs = dayjs(bookingDate);
-  const arrivalDateDayjs = dayjs(arrivalDate);
-  const departureDateDayjs = dayjs(departureDate);
-  return roomTypes.map((roomType) => {
-    const applicableRatePlans = selectApplicableRatePlans(
-      roomType.id, ratePlans, bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, fallbackCurrency, preferredCurrency
-    );
-    const response = {
-      id: roomType.id,
-      prices: [],
-    };
-    // no rate plans available at all, bail
-    if (!applicableRatePlans.length) {
-      return response;
+export class PriceComputerError extends Error {};
+
+export class PriceComputer {
+  /**
+   * @param  {Array<Object>} roomTypes List of room types as defined
+   * in https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L136
+   * @param  {Array<Object>} ratePlans List of rate plans as defined in
+   * https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L212
+   * @param  {string} defaultCurrency currency used when a rate plan has
+   * no currency specified
+   */
+  constructor (roomTypes, ratePlans, defaultCurrency) {
+    if (!roomTypes) {
+      throw new PriceComputerError('Missing roomTypes');
     }
+    if (!ratePlans) {
+      throw new PriceComputerError('Missing ratePlans');
+    }
+    if (!defaultCurrency) {
+      throw new PriceComputerError('Missing defaultCurrency');
+    }
+    this.roomTypes = roomTypes;
+    this.ratePlans = ratePlans;
+    this.defaultCurrency = defaultCurrency;
+  }
 
-    const dailyPrices = computeStayPrices(
-      arrivalDateDayjs, departureDateDayjs, guests, fallbackCurrency, applicableRatePlans,
-    );
+  /*getBestPriceWithSingleRatePlan (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {
 
-    response.prices = Object.keys(dailyPrices).map((currency) => {
-      return {
-        currency,
-        total: dailyPrices[currency]
-          .reduce((a, b) => a.add(currencyjs(b, { symbol: currency })), currencyjs(0, { symbol: currency })),
+  }
+
+  getPossiblePricesWithSingleRatePlan (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {
+
+  }*/
+
+  /**
+   * Computes the best prices for given period of time and
+   * a party of guests. This picks the best rate plan
+   * for every guest for every single day.
+   *
+   * If no currency or roomTypeId is specified, all variants
+   * are computed.
+   *
+   * @param  {mixed} bookingDate anything parseable by dayjs
+   * @param  {mixed} arrivalDate anything parseable by dayjs
+   * @param  {mixed} departureDate anything parseable by dayjs
+   * @param  {Array<Object>} guests List of information about guests
+   * @param  {string} currency you can limit the results only
+   * to this currency
+   * @param  {string} roomTypeId you can limit the results only to
+   * this roomTypeId
+   * @return {Array} List of prices for every room type. Every item in
+   * the array contains an id (roomTypeId) and a list of `prices` for all
+   * applicable currencies such as this. The total sum is an instance
+   * of currencyjs. In case of no applicable rate plans, the prices array
+   * is empty.
+   * ```
+   * [
+   *   {
+   *     "id": "single-bed",
+   *     "prices": [
+   *       {
+   *         "currency": "EUR",
+   *         "total": 123.12
+   *       },
+   *       {
+   *         "currency": "USD",
+   *         "total": 130
+   *       }
+   *     ]
+   *   }
+   * ]
+   * ```
+   */
+  getBestPrice (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {
+    const bookingDateDayjs = dayjs(bookingDate);
+    const arrivalDateDayjs = dayjs(arrivalDate);
+    const departureDateDayjs = dayjs(departureDate);
+    const roomTypes = roomTypeId ? this.roomTypes.filter((rt) => rt.id === roomTypeId) : this.roomTypes;
+    
+    return roomTypes.map((roomType) => {
+      const applicableRatePlans = selectApplicableRatePlans(
+        roomType.id, this.ratePlans, bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, this.defaultCurrency, currency
+      );
+      const response = {
+        id: roomType.id,
+        prices: [],
       };
-    });
+      // no rate plans available at all, bail
+      if (!applicableRatePlans.length) {
+        return response;
+      }
 
-    return response;
-  });
-};
+      const dailyPrices = computeStayPrices(
+        arrivalDateDayjs, departureDateDayjs, guests, this.defaultCurrency, applicableRatePlans,
+      );
+
+      response.prices = Object.keys(dailyPrices).map((curr) => {
+        return {
+          currency: curr,
+          total: dailyPrices[curr]
+            .reduce((a, b) => a.add(currencyjs(b, { symbol: curr })), currencyjs(0, { symbol: curr })),
+        };
+      });
+
+      return response;
+    });
+  }
+}
 
 export default {
+  PriceComputer,
+  PriceComputerError,
   computeStayPrices,
   computeDailyPrice,
-  computePrices,
   ratePlans: {
     selectApplicableModifiers,
     selectBestGuestModifier,

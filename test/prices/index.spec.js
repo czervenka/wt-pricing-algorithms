@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import currency from 'currency.js';
-import { computePrices, computeStayPrices, computeDailyPrice } from '../../src/prices';
+import { PriceComputer, computeStayPrices, computeDailyPrice } from '../../src/prices';
 
 describe('prices.index', () => {
   let guests;
@@ -36,23 +36,135 @@ describe('prices.index', () => {
     ];
   });
 
-  describe('computePrices', () => {
-    it('should return null price if no rate plan matches the room type', () => {
-      const result = computePrices(new Date(), '2018-01-03', '2018-01-05', guests, roomTypes, ratePlans, fallbackCurrency);
-      expect(result.find(e => e.id === 'rta')).toHaveProperty('prices', []);
+  describe('PriceComputer', () => {
+    let computer;
+
+    beforeEach(() => {
+      computer = new PriceComputer(roomTypes, ratePlans, fallbackCurrency);
     });
 
-    it('should return a single price if a rate plan matches the room type', () => {
-      const result = computePrices(new Date(), '2018-01-03', '2018-01-05', guests, roomTypes, ratePlans, fallbackCurrency);
-      const rtb = result.find(e => e.id === 'rtb');
-      expect(rtb).toHaveProperty('prices');
-      expect(rtb.prices.length).toBe(1);
-      expect(rtb.prices[0].currency).toBe('CZK');
-      expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'CZK');
-      expect(rtb.prices[0].total.format()).toBe(currency(200).format());
+    describe('constructor', () => {
+      it('should throw when there are no roomTypes', () => {
+        expect(() => {
+          // eslint-disable-next-line no-new
+          new PriceComputer(null, ratePlans, fallbackCurrency);
+        }).toThrow();
+      });
+
+      it('should throw when there are no ratePlans', () => {
+        expect(() => {
+          // eslint-disable-next-line no-new
+          new PriceComputer(roomTypes, null, fallbackCurrency);
+        }).toThrow();
+      });
+
+      it('should throw when there is no defaultCurrency', () => {
+        expect(() => {
+          // eslint-disable-next-line no-new
+          new PriceComputer(roomTypes, ratePlans, null);
+        }).toThrow();
+      });
     });
 
-    it('should return prices in multiple currencies', () => {
+    describe('getBestPrice', () => {
+      it('should return null price if no rate plan matches the room type', () => {
+        const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests);
+        expect(result.find(e => e.id === 'rta')).toHaveProperty('prices', []);
+      });
+
+      it('should return a single price if a rate plan matches the room type', () => {
+        const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests);
+        const rtb = result.find(e => e.id === 'rtb');
+        expect(rtb).toHaveProperty('prices');
+        expect(rtb.prices.length).toBe(1);
+        expect(rtb.prices[0].currency).toBe('CZK');
+        expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'CZK');
+        expect(rtb.prices[0].total.format()).toBe(currency(200).format());
+      });
+
+      it('should return prices in multiple currencies', () => {
+        ratePlans.push({
+          id: 'rpa-eur',
+          currency: 'EUR',
+          price: 33,
+          roomTypeIds: ['rtb'],
+          availableForReservation: {
+            from: '2018-01-01',
+            to: '2020-12-31',
+          },
+          availableForTravel: {
+            from: '2016-06-01',
+            to: '2020-12-31',
+          },
+        });
+        const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests);
+        expect(result.length).toBe(2);
+        const rtb = result.find(e => e.id === 'rtb');
+        expect(rtb).toHaveProperty('prices');
+        expect(rtb.prices.length).toBe(2);
+        expect(rtb.prices[0].currency).toBe('CZK');
+        expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'CZK');
+        expect(rtb.prices[0].total.format()).toBe(currency(200).format());
+        expect(rtb.prices[1].currency).toBe('EUR');
+        expect(rtb.prices[1].total).toHaveProperty('s.symbol', 'EUR');
+        expect(rtb.prices[1].total.format()).toBe(currency(66).format());
+      });
+
+      it('should return a price in a single currency if requested', () => {
+        ratePlans.push({
+          id: 'rpa-eur',
+          currency: 'EUR',
+          price: 33,
+          roomTypeIds: ['rtb'],
+          availableForReservation: {
+            from: '2018-01-01',
+            to: '2020-12-31',
+          },
+          availableForTravel: {
+            from: '2016-06-01',
+            to: '2020-12-31',
+          },
+        });
+        const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests, 'EUR');
+        expect(result.length).toBe(2);
+        const rtb = result.find(e => e.id === 'rtb');
+        expect(rtb).toHaveProperty('prices');
+        expect(rtb.prices.length).toBe(1);
+        expect(rtb.prices[0].currency).toBe('EUR');
+        expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'EUR');
+        expect(rtb.prices[0].total.format()).toBe(currency(66).format());
+      });
+
+      it('should return a price for a single room type if requested', () => {
+        ratePlans.push({
+          id: 'rpa-eur',
+          currency: 'EUR',
+          price: 33,
+          roomTypeIds: ['rtb'],
+          availableForReservation: {
+            from: '2018-01-01',
+            to: '2020-12-31',
+          },
+          availableForTravel: {
+            from: '2016-06-01',
+            to: '2020-12-31',
+          },
+        });
+        const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests, null, 'rtb');
+        expect(result.length).toBe(1);
+        const rtb = result.find(e => e.id === 'rtb');
+        expect(rtb).toHaveProperty('prices');
+        expect(rtb.prices.length).toBe(2);
+        expect(rtb.prices[0].currency).toBe('CZK');
+        expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'CZK');
+        expect(rtb.prices[0].total.format()).toBe(currency(200).format());
+        expect(rtb.prices[1].currency).toBe('EUR');
+        expect(rtb.prices[1].total).toHaveProperty('s.symbol', 'EUR');
+        expect(rtb.prices[1].total.format()).toBe(currency(66).format());
+      });
+    });
+
+    it('should return a price for a single room type and currency if requested', () => {
       ratePlans.push({
         id: 'rpa-eur',
         currency: 'EUR',
@@ -67,16 +179,14 @@ describe('prices.index', () => {
           to: '2020-12-31',
         },
       });
-      const result = computePrices(new Date(), '2018-01-03', '2018-01-05', guests, roomTypes, ratePlans, fallbackCurrency);
+      const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests, 'CZK', 'rtb');
+      expect(result.length).toBe(1);
       const rtb = result.find(e => e.id === 'rtb');
       expect(rtb).toHaveProperty('prices');
-      expect(rtb.prices.length).toBe(2);
+      expect(rtb.prices.length).toBe(1);
       expect(rtb.prices[0].currency).toBe('CZK');
       expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'CZK');
       expect(rtb.prices[0].total.format()).toBe(currency(200).format());
-      expect(rtb.prices[1].currency).toBe('EUR');
-      expect(rtb.prices[1].total).toHaveProperty('s.symbol', 'EUR');
-      expect(rtb.prices[1].total.format()).toBe(currency(66).format());
     });
   });
 
