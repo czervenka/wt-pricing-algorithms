@@ -176,7 +176,42 @@ export class PriceComputer {
   }
 
   getBestPriceWithSingleRatePlan (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {
+    return this._determinePrices(bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId, (dailyPrices, lengthOfStay) => {
+      const prices = [];
+      const currencies = Object.keys(dailyPrices);
+      // Currencies
+      for (let i = 0; i < currencies.length; i += 1) {
+        const currentCurrency = dailyPrices[currencies[i]];
+        const ratePlanOccurrences = {};
+        // Days
+        for (let j = 0; j < currentCurrency.length; j += 1) {
+          currentCurrency[j].map((rp) => {
+            if (!ratePlanOccurrences[rp.ratePlan.id]) {
+              ratePlanOccurrences[rp.ratePlan.id] = {
+                ratePlan: rp.ratePlan,
+                dailyPrices: [],
+              };
+            }
+            ratePlanOccurrences[rp.ratePlan.id].dailyPrices.push(rp.dailyPrice);
+          });
+        }
+        const bestRatePlan = Object.values(ratePlanOccurrences)
+          .filter((rp) => rp.dailyPrices.length === lengthOfStay)
+          .map((rp) => ({
+            ratePlan: rp.ratePlan,
+            total: rp.dailyPrices.reduce((total, dp) => total.add(dp), currencyjs(0, { symbol: currencies[i] })),
+          }))
+          .sort((a, b) => a.total >= b.total ? -1 : 1)
+          .pop();
 
+        prices.push({
+          currency: currencies[i],
+          total: bestRatePlan.total,
+          ratePlan: bestRatePlan.ratePlan,
+        });
+      }
+      return prices;
+    });
   }
 
   getPossiblePricesWithSingleRatePlan (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {

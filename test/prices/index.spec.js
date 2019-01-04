@@ -442,6 +442,31 @@ describe('prices.index', () => {
         expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('total', currency(584, { symbol: fallbackCurrency }));
       });
     });
+
+    describe('getBestPriceWithSingleRatePlan', () => {
+      it.only('should return the best rate plan that fits consecutively', () => {
+        computer.ratePlans[1] = {
+          id: 'rpb',
+          price: 60,
+          roomTypeIds: ['rtb'],
+          availableForReservation: {
+            from: '2018-01-01',
+            to: '2020-12-31',
+          },
+          availableForTravel: {
+            from: '2016-06-01',
+            to: '2020-09-30',
+          },
+        };
+        const result = computer.getBestPriceWithSingleRatePlan(new Date(), arrivalDateDayjs, departureDateDayjs, guests, fallbackCurrency, 'rtb');
+        const rtbResult = result.find((r) => r.id === 'rtb');
+        expect(rtbResult).toHaveProperty('prices');
+        expect(rtbResult.prices.length).toBe(1);
+        expect(rtbResult.prices[0]).toHaveProperty('currency', fallbackCurrency);
+        expect(rtbResult.prices[0]).toHaveProperty('total', currency(120, { symbol: fallbackCurrency }));
+        expect(rtbResult.prices[0]).toHaveProperty('ratePlan.id', 'rpb');
+      });
+    });
   });
 
   describe('computeDailyRatePlans', () => {
