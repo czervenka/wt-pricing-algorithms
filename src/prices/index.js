@@ -43,11 +43,17 @@ export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan, cur
 };
 
 /**
- * Computes a best price for the whole stay for all
- * of the guests in every possible currency. To report
- * a price, rate plans in every currency have to cover
- * the whole period between `arrivalDateDayjs` and
- * `departureDateDayjs`.
+ * Computes all daily prices for all rate plans that
+ * can be applied for every day of the stay and groups
+ * them by currency. If we are not able to cover all days
+ * for any given currency, the whole currency gets dropped.
+ *
+ * This allows for flexible rate plan combination strategies
+ * and various end-user price combinations.
+ *
+ * This does not allow a combination on a day-guest level, i. e.
+ * a different rate plan can not be picked for different people on the
+ * same day.
  *
  * @param  {dayjs} arrivalDateDayjs
  * @param  {dayjs} departureDateDayjs
@@ -58,23 +64,28 @@ export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan, cur
  * @return {Object} For every currency a record exists in this map. The value
  * is an array of currencyjs instances that denote the best price
  * for all guests for a single day.
+ * @return {Object} Every key is a currency code and its value is
+ * an array (every index represents a single day). For every day
+ * there is a list of usable daily prices computed from a certain rate plan.
  */
-export const computeStayPrices = (arrivalDateDayjs, departureDateDayjs, guests, hotelCurrency, applicableRatePlans) => {
+export const computeDailyRatePlans = (arrivalDateDayjs, departureDateDayjs, guests, hotelCurrency, applicableRatePlans) => {
   const dailyPrices = {};
   const lengthOfStay = Math.abs(arrivalDateDayjs.diff(departureDateDayjs, 'days'));
   let currentDate = dayjs(arrivalDateDayjs);
+
   // Find an appropriate rate plan for every day
   for (let i = 0; i < lengthOfStay; i += 1) {
     let currentRatePlan;
     let currentCurrency;
-    const bestDailyPrice = {};
-
-    // loop over all rate plans and find the most fitting one for that day in all currencies
+    // loop over all rate plans and find the usable ones for that day in all currencies
     for (let j = 0; j < applicableRatePlans.length; j += 1) {
       currentRatePlan = applicableRatePlans[j];
       currentCurrency = currentRatePlan.currency || hotelCurrency;
       if (!dailyPrices[currentCurrency]) {
         dailyPrices[currentCurrency] = [];
+      }
+      if (!dailyPrices[currentCurrency][i]) {
+        dailyPrices[currentCurrency][i] = [];
       }
 
       // Rate plan without date restriction can be applied at any time
@@ -84,21 +95,16 @@ export const computeStayPrices = (arrivalDateDayjs, departureDateDayjs, guests, 
       const availableForTravelTo = currentRatePlan.availableForTravel
         ? dayjs(currentRatePlan.availableForTravel.to)
         : dayjs(currentDate);
-      // Deal with a rate plan ending sometimes during the stay
-      if (currentDate >= availableForTravelFrom && currentDate <= availableForTravelTo) {
-        const currentDailyPrice = computeDailyPrice(
-          guests, lengthOfStay, currentDate, currentRatePlan, currentCurrency,
-        );
 
-        if (!bestDailyPrice[currentCurrency] ||
-          currentDailyPrice.subtract(bestDailyPrice[currentCurrency]) <= 0) {
-          bestDailyPrice[currentCurrency] = currentDailyPrice;
-        }
+      // Count only rate plan ending sometimes during the stay
+      if (currentDate >= availableForTravelFrom && currentDate <= availableForTravelTo) {
+        dailyPrices[currentCurrency][i].push({
+          ratePlan: currentRatePlan,
+          dailyPrice: computeDailyPrice(
+            guests, lengthOfStay, currentDate, currentRatePlan, currentCurrency,
+          ),
+        });
       }
-    }
-    const currencies = Object.keys(bestDailyPrice);
-    for (let j = 0; j < currencies.length; j += 1) {
-      dailyPrices[currencies[j]].push(bestDailyPrice[currencies[j]]);
     }
     currentDate = currentDate.add(1, 'day');
   }
@@ -106,14 +112,17 @@ export const computeStayPrices = (arrivalDateDayjs, departureDateDayjs, guests, 
   // Filter out currencies that do not cover the whole stay range
   const allCurrencies = Object.keys(dailyPrices);
   for (let i = 0; i < allCurrencies.length; i += 1) {
-    if (dailyPrices[allCurrencies[i]].length < lengthOfStay ||
-      dailyPrices[allCurrencies[i]].indexOf(undefined) > -1) {
+    const filteredLength = dailyPrices[allCurrencies[i]].filter((f) => f.length > 0).length;
+    if (filteredLength < lengthOfStay) {
       delete dailyPrices[allCurrencies[i]];
     }
   }
   return dailyPrices;
 };
 
+/**
+ * Error scoped to PriceComputer
+ */
 export class PriceComputerError extends Error {};
 
 export class PriceComputer {
@@ -140,13 +149,13 @@ export class PriceComputer {
     this.defaultCurrency = defaultCurrency;
   }
 
-  /*getBestPriceWithSingleRatePlan (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {
+  getBestPriceWithSingleRatePlan (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {
 
   }
 
   getPossiblePricesWithSingleRatePlan (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {
 
-  }*/
+  }
 
   /**
    * Computes the best prices for given period of time and
@@ -155,6 +164,11 @@ export class PriceComputer {
    *
    * If no currency or roomTypeId is specified, all variants
    * are computed.
+   *
+   * To report
+   * a price, a combination of rate plans in every currency
+   * has to cover the whole period between `arrivalDateDayjs`
+   * and `departureDateDayjs`.
    *
    * @param  {mixed} bookingDate anything parseable by dayjs
    * @param  {mixed} arrivalDate anything parseable by dayjs
@@ -206,18 +220,27 @@ export class PriceComputer {
         return response;
       }
 
-      const dailyPrices = computeStayPrices(
-        arrivalDateDayjs, departureDateDayjs, guests, this.defaultCurrency, applicableRatePlans,
-      );
-
-      response.prices = Object.keys(dailyPrices).map((curr) => {
-        return {
-          currency: curr,
-          total: dailyPrices[curr]
-            .reduce((a, b) => a.add(currencyjs(b, { symbol: curr })), currencyjs(0, { symbol: curr })),
-        };
-      });
-
+      const dailyPrices = computeDailyRatePlans(arrivalDateDayjs, departureDateDayjs, guests, this.defaultCurrency, applicableRatePlans);
+      response.prices = [];
+      const currencies = Object.keys(dailyPrices);
+      for (let i = 0; i < currencies.length; i += 1) {
+        const currentCurrency = dailyPrices[currencies[i]];
+        const dailyBests = [];
+        for (let j = 0; j < currentCurrency.length; j += 1) {
+          const price = currentCurrency[j]
+            .reduce((agg, curr) => {
+              if (!agg || agg.subtract(curr.dailyPrice) >= 0) {
+                return curr.dailyPrice;
+              }
+              return agg;
+            }, undefined);
+          dailyBests.push(price);
+        }
+        response.prices.push({
+          currency: currencies[i],
+          total: dailyBests.reduce((a, b) => a.add(currencyjs(b, { symbol: currencies[i] })), currencyjs(0, { symbol: currencies[i] })),
+        });
+      }
       return response;
     });
   }
@@ -226,7 +249,7 @@ export class PriceComputer {
 export default {
   PriceComputer,
   PriceComputerError,
-  computeStayPrices,
+  computeDailyRatePlans,
   computeDailyPrice,
   ratePlans: {
     selectApplicableModifiers,
