@@ -66,7 +66,8 @@ describe('prices.index', () => {
       });
     });
 
-    describe('getBestPrice', () => {
+    // TODO rewrite tests to actually use _determinePrices
+    describe('_determinePrices', () => {
       it('should return null price if no rate plan matches the room type', () => {
         const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests);
         expect(result.find(e => e.id === 'rta')).toHaveProperty('prices', []);
@@ -187,7 +188,9 @@ describe('prices.index', () => {
         expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'CZK');
         expect(rtb.prices[0].total.format()).toBe(currency(200).format());
       });
+    });
 
+    describe('getBestPrice', () => {
       it('should return the lowest price if no modifiers are present and multiple rate plans fit', () => {
         computer.ratePlans[1] = {
           id: 'rpb',
@@ -211,6 +214,7 @@ describe('prices.index', () => {
         expect(rtbResult.prices[0].total.format()).toBe(currency(60 + 60).format());
       });
 
+      // TODO move to computeDailyRatePlans
       it('should return the lowest price if no modifiers are present and multiple rate plans fit (one without availableForTravel)', () => {
         computer.ratePlans[1] = {
           id: 'rpb',
@@ -287,6 +291,7 @@ describe('prices.index', () => {
         expect(rtbResult.prices[0].total).toHaveProperty('s.symbol', fallbackCurrency);
       });
 
+      // TODO move to computeDailyRatePlans
       it('should not return an estimate if even a single date of a stay is not covered by a valid rate plan', () => {
         computer.ratePlans[0] = Object.assign(
           {},
@@ -318,6 +323,7 @@ describe('prices.index', () => {
         expect(rtbResult.prices.length).toBe(0);
       });
 
+      // TODO move to computeDailyRatePlans
       it('should not combine rate plans with different currencies', () => {
         computer.ratePlans[0] = Object.assign(
           {},
@@ -371,7 +377,70 @@ describe('prices.index', () => {
     });
 
     describe('getPossiblePricesWithSingleRatePlan', () => {
+      it('should return all rate plans that fit consecutively', () => {
+        computer.ratePlans[1] = {
+          id: 'rpb',
+          price: 60,
+          roomTypeIds: ['rtb'],
+          availableForReservation: {
+            from: '2018-01-01',
+            to: '2020-12-31',
+          },
+          availableForTravel: {
+            from: '2016-06-01',
+            to: '2020-09-30',
+          },
+        };
+        const result = computer.getPossiblePricesWithSingleRatePlan(new Date(), arrivalDateDayjs, departureDateDayjs, guests, fallbackCurrency, 'rtb');
+        const rtbResult = result.find((r) => r.id === 'rtb');
+        expect(rtbResult).toHaveProperty('prices');
+        expect(rtbResult.prices.length).toBe(1);
+        expect(rtbResult.prices[0]).toHaveProperty('currency', fallbackCurrency);
+        expect(rtbResult.prices[0]).toHaveProperty('ratePlans');
+        expect(rtbResult.prices[0].ratePlans.length).toBe(2);
+        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('id', 'rpa');
+        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('dailyPrices', Array.from({ length: 2 }, (_, i) => currency(100, { symbol: fallbackCurrency })));
+        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('total', currency(200, { symbol: fallbackCurrency }));
+        expect(rtbResult.prices[0].ratePlans[1]).toHaveProperty('id', 'rpb');
+        expect(rtbResult.prices[0].ratePlans[1]).toHaveProperty('dailyPrices', Array.from({ length: 2 }, (_, i) => currency(60, { symbol: fallbackCurrency })));
+        expect(rtbResult.prices[0].ratePlans[1]).toHaveProperty('total', currency(120, { symbol: fallbackCurrency }));
+      });
 
+      it('should not return any combination of rate plans', () => {
+        computer.ratePlans[0] = Object.assign(
+          {},
+          computer.ratePlans[0], {
+            price: 73,
+            availableForTravel: {
+              from: '2018-10-02',
+              to: '2018-10-10',
+            },
+          },
+        );
+        computer.ratePlans[1] = {
+          id: 'rpb',
+          price: 60,
+          roomTypeIds: ['rtb'],
+          availableForReservation: {
+            from: '2018-01-01',
+            to: '2020-12-31',
+          },
+          availableForTravel: {
+            from: '2018-10-07',
+            to: '2018-10-10',
+          },
+        };
+        const result = computer.getPossiblePricesWithSingleRatePlan(new Date(), '2018-10-02', '2018-10-10', guests, fallbackCurrency, 'rtb');
+        const rtbResult = result.find((r) => r.id === 'rtb');
+        expect(rtbResult).toHaveProperty('prices');
+        expect(rtbResult.prices.length).toBe(1);
+        expect(rtbResult.prices[0]).toHaveProperty('currency', fallbackCurrency);
+        expect(rtbResult.prices[0]).toHaveProperty('ratePlans');
+        expect(rtbResult.prices[0].ratePlans.length).toBe(1);
+        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('id', 'rpa');
+        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('dailyPrices', Array.from({ length: 8 }, (_, i) => currency(73, { symbol: fallbackCurrency })));
+        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('total', currency(584, { symbol: fallbackCurrency }));
+      });
     });
   });
 

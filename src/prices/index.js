@@ -149,12 +149,69 @@ export class PriceComputer {
     this.defaultCurrency = defaultCurrency;
   }
 
+  _determinePrices (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId, ratePlansStrategy) {
+    const bookingDateDayjs = dayjs(bookingDate);
+    const arrivalDateDayjs = dayjs(arrivalDate);
+    const departureDateDayjs = dayjs(departureDate);
+    const lengthOfStay = Math.abs(arrivalDateDayjs.diff(departureDateDayjs, 'days'));
+    const roomTypes = roomTypeId ? this.roomTypes.filter((rt) => rt.id === roomTypeId) : this.roomTypes;
+    
+    return roomTypes.map((roomType) => {
+      const applicableRatePlans = selectApplicableRatePlans(
+        roomType.id, this.ratePlans, bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, this.defaultCurrency, currency
+      );
+      const response = {
+        id: roomType.id,
+        prices: [],
+      };
+      // no rate plans available at all, bail
+      if (!applicableRatePlans.length) {
+        return response;
+      }
+
+      const dailyPrices = computeDailyRatePlans(arrivalDateDayjs, departureDateDayjs, guests, this.defaultCurrency, applicableRatePlans);
+      response.prices = ratePlansStrategy(dailyPrices, lengthOfStay);
+      return response;
+    });
+  }
+
   getBestPriceWithSingleRatePlan (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {
 
   }
 
   getPossiblePricesWithSingleRatePlan (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {
-
+    return this._determinePrices(bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId, (dailyPrices, lengthOfStay) => {
+      const prices = [];
+      const currencies = Object.keys(dailyPrices);
+      // Currencies
+      for (let i = 0; i < currencies.length; i += 1) {
+        const currentCurrency = dailyPrices[currencies[i]];
+        const ratePlanOccurrences = {};
+        // Days
+        for (let j = 0; j < currentCurrency.length; j += 1) {
+          currentCurrency[j].map((rp) => {
+            if (!ratePlanOccurrences[rp.ratePlan.id]) {
+              ratePlanOccurrences[rp.ratePlan.id] = {
+                ratePlan: rp.ratePlan,
+                dailyPrices: [],
+              };
+            }
+            ratePlanOccurrences[rp.ratePlan.id].dailyPrices.push(rp.dailyPrice);
+          });
+        }
+        prices.push({
+          currency: currencies[i],
+          ratePlans: Object.values(ratePlanOccurrences)
+            .filter((rp) => rp.dailyPrices.length === lengthOfStay)
+            .map((rp) => ({
+              ...rp.ratePlan,
+              dailyPrices: rp.dailyPrices,
+              total: rp.dailyPrices.reduce((total, dp) => total.add(dp), currencyjs(0, { symbol: currencies[i] })),
+            })),
+        });
+      }
+      return prices;
+    });
   }
 
   /**
@@ -202,26 +259,8 @@ export class PriceComputer {
    * ```
    */
   getBestPrice (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {
-    const bookingDateDayjs = dayjs(bookingDate);
-    const arrivalDateDayjs = dayjs(arrivalDate);
-    const departureDateDayjs = dayjs(departureDate);
-    const roomTypes = roomTypeId ? this.roomTypes.filter((rt) => rt.id === roomTypeId) : this.roomTypes;
-    
-    return roomTypes.map((roomType) => {
-      const applicableRatePlans = selectApplicableRatePlans(
-        roomType.id, this.ratePlans, bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, this.defaultCurrency, currency
-      );
-      const response = {
-        id: roomType.id,
-        prices: [],
-      };
-      // no rate plans available at all, bail
-      if (!applicableRatePlans.length) {
-        return response;
-      }
-
-      const dailyPrices = computeDailyRatePlans(arrivalDateDayjs, departureDateDayjs, guests, this.defaultCurrency, applicableRatePlans);
-      response.prices = [];
+    return this._determinePrices(bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId, (dailyPrices) => {
+      const prices = [];
       const currencies = Object.keys(dailyPrices);
       for (let i = 0; i < currencies.length; i += 1) {
         const currentCurrency = dailyPrices[currencies[i]];
@@ -236,12 +275,12 @@ export class PriceComputer {
             }, undefined);
           dailyBests.push(price);
         }
-        response.prices.push({
+        prices.push({
           currency: currencies[i],
           total: dailyBests.reduce((a, b) => a.add(currencyjs(b, { symbol: currencies[i] })), currencyjs(0, { symbol: currencies[i] })),
         });
       }
-      return response;
+      return prices;
     });
   }
 }
