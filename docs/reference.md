@@ -16,16 +16,23 @@
     -   [Parameters][12]
 -   [computeDailyPrice][13]
     -   [Parameters][14]
--   [computeStayPrices][15]
+-   [computeDailyRatePlans][15]
     -   [Parameters][16]
--   [computePrices][17]
-    -   [Parameters][18]
--   [selectApplicableModifiers][19]
-    -   [Parameters][20]
--   [selectBestGuestModifier][21]
-    -   [Parameters][22]
--   [selectApplicableRatePlans][23]
-    -   [Parameters][24]
+-   [PriceComputerError][17]
+-   [constructor][18]
+    -   [Parameters][19]
+-   [getBestPriceWithSingleRatePlan][20]
+    -   [Parameters][21]
+-   [getPossiblePricesWithSingleRatePlan][22]
+    -   [Parameters][23]
+-   [getBestPrice][24]
+    -   [Parameters][25]
+-   [selectApplicableModifiers][26]
+    -   [Parameters][27]
+-   [selectBestGuestModifier][28]
+    -   [Parameters][29]
+-   [selectApplicableRatePlans][30]
+    -   [Parameters][31]
 
 ## indexAvailability
 
@@ -34,9 +41,9 @@ object indexeed by roomTypeId and date.
 
 ### Parameters
 
--   `availability` **[Array][25]** as defined in [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L373][26]
+-   `availability` **[Array][32]** as defined in [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L373][33]
 
-Returns **[Object][27]** such as    {
+Returns **[Object][34]** such as    {
       "single-bed": {
         "2018-01-01": {
           "quantity": 3,
@@ -63,11 +70,11 @@ is returned, otherwise a number is returned.
 
 -   `arrivalDate` **mixed** anything parseable by dayjs
 -   `departureDate` **mixed** anything parseable by dayjs
--   `numberOfGuests` **[number][28]** 
--   `roomTypes` **[Array][25]&lt;[Object][27]>** 
--   `indexedAvailability` **[Object][27]** result of `indexAvailability` method
+-   `numberOfGuests` **[number][35]** 
+-   `roomTypes` **[Array][32]&lt;[Object][34]>** 
+-   `indexedAvailability` **[Object][34]** result of `indexAvailability` method
 
-Returns **[Array][25]&lt;[Object][27]>**     [
+Returns **[Array][32]&lt;[Object][34]>**     [
       { "roomTypeId": "rta", "quantity": 1 },
       { "roomTypeId": "rtb", "quantity": 1 },
       { "roomTypeId": "rtc", "quantity": undefined }
@@ -83,10 +90,10 @@ deadline where possible.
 -   `bookingDateDayjs` **dayjs** is used to determine how far in the
     future will the actual stay happen.
 -   `arrivalDayjs` **dayjs** is a date of arrival
--   `cancellationPolicies` **[Array][25]&lt;[Object][27]>** List of all declared
+-   `cancellationPolicies` **[Array][32]&lt;[Object][34]>** List of all declared
     policies
 
-Returns **[Array][25]&lt;[object][27]>** Normalized list of policies where each
+Returns **[Array][32]&lt;[object][34]>** Normalized list of policies where each
 record contains from, to, and an appropriate amount.
 
 ## createFeeSchedule
@@ -99,12 +106,12 @@ for every day between `bookingDateDayjs` and `arrivalDayjs`
 
 -   `bookingDateDayjs` **dayjs** is used to determine where to start.
 -   `arrivalDayjs` **dayjs** is a date of arrival
--   `normalizedCancellationPolicies` **[Array][25]&lt;[Object][27]>** result of
+-   `normalizedCancellationPolicies` **[Array][32]&lt;[Object][34]>** result of
     `normalizePolicyDates`
--   `defaultCancellationAmount` **[Number][28]** a default that is used
+-   `defaultCancellationAmount` **[Number][35]** a default that is used
     in case there is no special policy applicable to any given date.
 
-Returns **[Array][25]&lt;[Object][27]>** A list of fees best for a hotel. Items
+Returns **[Array][32]&lt;[Object][34]>** A list of fees best for a hotel. Items
 contain an object containing dateDayjs and amount and are ordered
 by date in an ascending order.
 
@@ -116,9 +123,9 @@ with the same amount.
 ### Parameters
 
 -   `orderedSchedule`  
--   `feeSchedule` **[Array][25]&lt;[Object][27]>** ordered result of createFeeSchedule
+-   `feeSchedule` **[Array][32]&lt;[Object][34]>** ordered result of createFeeSchedule
 
-Returns **[Array][25]&lt;[Object][27]>** List of periods, each containing from,
+Returns **[Array][32]&lt;[Object][34]>** List of periods, each containing from,
 to and amount.
 
 ## computeCancellationFees
@@ -132,12 +139,12 @@ in the future.
     a date on which the booking is happening
 -   `arrivalDate` **mixed** anything parseable by dayjs marking
     a date on which the consumer will arrive
--   `cancellationPolicies` **[Array][25]&lt;[Object][27]>** list of policies as defined
-    in [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L129][29]
--   `defaultCancellationAmount` **[Number][28]** fallback amount as defined in
-    [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L124][30]
+-   `cancellationPolicies` **[Array][32]&lt;[Object][34]>** list of policies as defined
+    in [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L129][36]
+-   `defaultCancellationAmount` **[Number][35]** fallback amount as defined in
+    [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L124][37]
 
-Returns **[Array][25]&lt;[Object][27]>** Result of `reduceFeeSchedule`
+Returns **[Array][32]&lt;[Object][34]>** Result of `reduceFeeSchedule`
 
 ## computeDailyPrice
 
@@ -147,57 +154,159 @@ modifier for every guest.
 
 ### Parameters
 
--   `guests` **[Array][25]&lt;[Object][27]>** list of information about guests,
+-   `guests` **[Array][32]&lt;[Object][34]>** list of information about guests,
     right now only the `age` field is expected
--   `lengthOfStay` **[Number][28]** 
+-   `lengthOfStay` **[Number][35]** 
 -   `dateDayjs` **dayjs** 
--   `ratePlan` **[Object][27]** 
--   `currentCurrency` **[string][31]** 
+-   `ratePlan` **[Object][34]** 
+-   `currentCurrency` **[string][38]** 
 
 Returns **currencyjs** Total amount for all of the guests
 
-## computeStayPrices
+## computeDailyRatePlans
 
-Computes a best price for the whole stay for all
-of the guests in every possible currency. To report
-a price, rate plans in every currency have to cover
-the whole period between `arrivalDateDayjs` and
-`departureDateDayjs`.
+Computes all daily prices for all rate plans that
+can be applied for every day of the stay and groups
+them by currency. If we are not able to cover all days
+for any given currency, the whole currency gets dropped.
+
+This allows for flexible rate plan combination strategies
+and various end-user price combinations.
+
+This does not allow a combination on a day-guest level, i. e.
+a different rate plan can not be picked for different people on the
+same day.
 
 ### Parameters
 
 -   `arrivalDateDayjs` **dayjs** 
 -   `departureDateDayjs` **dayjs** 
--   `guests` **[Array][25]&lt;[Object][27]>** list of information about guests,
+-   `guests` **[Array][32]&lt;[Object][34]>** list of information about guests,
     right now only the `age` field is expected
--   `hotelCurrency` **[string][31]** default hotel currency
--   `applicableRatePlans` **[Array][25]&lt;[object][27]>** list of possible rate plans
+-   `hotelCurrency` **[string][38]** default hotel currency
+-   `applicableRatePlans` **[Array][32]&lt;[object][34]>** list of possible rate plans
 
-Returns **[Object][27]** For every currency a record exists in this map. The value
+Returns **[Object][34]** For every currency a record exists in this map. The value
 is an array of currencyjs instances that denote the best price
 for all guests for a single day.
 
-## computePrices
+Returns **[Object][34]** Every key is a currency code and its value is
+an array (every index represents a single day). For every day
+there is a list of usable daily prices computed from a certain rate plan.    [
+      {
+        "ratePlan": <RatePlan object>,
+        "dailyPrice": <Result of computeDailyPrice>
+      }
+    ]
 
-Computes the best prices for all room types
-for given period of time and a party of guests.
+## PriceComputerError
+
+**Extends Error**
+
+Error scoped to PriceComputer
+
+## constructor
+
+### Parameters
+
+-   `roomTypes` **[Array][32]&lt;[Object][34]>** List of room types as defined
+    in [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L136][39]
+-   `ratePlans` **[Array][32]&lt;[Object][34]>** List of rate plans as defined in
+    [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L212][40]
+-   `defaultCurrency` **[string][38]** currency used when a rate plan has
+    no currency specified
+
+## getBestPriceWithSingleRatePlan
+
+Returns the rate plan that covers the whole stay
+with the best price.
+
+### Parameters
+
+-   `bookingDate` **mixed** 
+-   `arrivalDate` **mixed** 
+-   `departureDate` **mixed** 
+-   `guests` **[Array][32]&lt;[Object][34]>** list of information about guests,
+    right now only the `age` field is expected
+-   `currency` **[string][38]** optional filter by currency
+-   `roomTypeId` **[string][38]** optional filter by roomTypeId
+
+Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
+      {
+        "id": "RoomTypeId",
+        "prices": [
+          {
+            "currency": "CZK",
+            "total": <currencyjs instance>,
+            "ratePlan": <RatePlan object>
+          }
+        ]
+      }
+    ]
+
+## getPossiblePricesWithSingleRatePlan
+
+Returns all of the rate plans that cover the whole stay.
+A client can choose the most fitting one for their purpose.
+
+### Parameters
+
+-   `bookingDate` **mixed** 
+-   `arrivalDate` **mixed** 
+-   `departureDate` **mixed** 
+-   `guests` **[Array][32]&lt;[Object][34]>** list of information about guests,
+    right now only the `age` field is expected
+-   `currency` **[string][38]** optional filter by currency
+-   `roomTypeId` **[string][38]** optional filter by roomTypeId
+
+Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
+      {
+        "id": "RoomTypeId",
+        "prices": [
+          {
+            "currency": "CZK",
+            "ratePlans": [
+              {
+                "ratePlan": <RatePlan object>,
+                "dailyPrices": [
+                  <Result of computeDailyPrice>,
+                  <Result of computeDailyPrice>,
+                  ...
+                ],
+                "total": <currencyjs object>
+              }
+            ]
+          }
+        ]
+      }
+    ]
+
+## getBestPrice
+
+Computes the best prices for given period of time and
+a party of guests. This picks the best rate plan
+for every guest for every single day.
+
+If no currency or roomTypeId is specified, all variants
+are computed.
+
+To report
+a price, a combination of rate plans in every currency
+has to cover the whole period between `arrivalDateDayjs`
+and `departureDateDayjs`.
 
 ### Parameters
 
 -   `bookingDate` **mixed** anything parseable by dayjs
 -   `arrivalDate` **mixed** anything parseable by dayjs
 -   `departureDate` **mixed** anything parseable by dayjs
--   `guests` **[Array][25]&lt;[Object][27]>** List of information about guests
--   `roomTypes` **[Array][25]&lt;[Object][27]>** List of room types as defined
-    in [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L136][32]
--   `ratePlans` **[Array][25]&lt;[Object][27]>** List of rate plans as defined in
-    [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L212][33]
--   `fallbackCurrency` **[string][31]** currency used when a rate plan has
-    no currency specified
--   `preferredCurrency` **[string][31]** you can limit the results only
-    to this currency (optional, default `null`)
+-   `guests` **[Array][32]&lt;[Object][34]>** List of information about guests
+-   `currency` **[string][38]** you can limit the results only
+    to this currency
+-   `roomTypeId` **[string][38]** you can limit the results only to
+    this roomTypeId
 
-Returns **[Array][25]** List of prices for every room type. Every item in
+Returns **[Array][32]** List of prices for every room type. Every item in
 the array contains an id (roomTypeId) and a list of `prices` for all
 applicable currencies such as this. The total sum is an instance
 of currencyjs. In case of no applicable rate plans, the prices array
@@ -223,13 +332,13 @@ Picks rate plans modifiers applicable under given conditions.
 
 ### Parameters
 
--   `modifiers` **[Array][25]&lt;[Object][27]>** List of rate plan modifiers as
-    defined in [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L296][34]
+-   `modifiers` **[Array][32]&lt;[Object][34]>** List of rate plan modifiers as
+    defined in [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L296][41]
 -   `dateDayjs` **dayjs** A date for which we want to apply modifiers
--   `lengthOfStay` **[Number][28]** 
--   `numberOfGuests` **[Number][28]** 
+-   `lengthOfStay` **[Number][35]** 
+-   `numberOfGuests` **[Number][35]** 
 
-Returns **[Array][25]&lt;[Object][27]>** List of modifiers that can be applied
+Returns **[Array][32]&lt;[Object][34]>** List of modifiers that can be applied
 
 ## selectBestGuestModifier
 
@@ -239,11 +348,11 @@ the best one from non-specific modifiers is used.
 
 ### Parameters
 
--   `modifiers` **[Array][25]&lt;[Object][27]>** List of rate plan modifiers as
-    defined in [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L296][34]
--   `age` **[Number][28]** Guest's age
+-   `modifiers` **[Array][32]&lt;[Object][34]>** List of rate plan modifiers as
+    defined in [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L296][41]
+-   `age` **[Number][35]** Guest's age
 
-Returns **[Object][27]** The modifier with the best rate in
+Returns **[Object][34]** The modifier with the best rate in
 favour of a guest.
 
 ## selectApplicableRatePlans
@@ -253,18 +362,18 @@ given conditions.
 
 ### Parameters
 
--   `roomTypeId` **[string][31]** 
--   `ratePlans` **[Array][25]&lt;[Object][27]>** list of rate plans as defined in
-    [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L212][33]
+-   `roomTypeId` **[string][38]** 
+-   `ratePlans` **[Array][32]&lt;[Object][34]>** list of rate plans as defined in
+    [https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L212][40]
 -   `bookingDateDayjs` **dayjs** 
 -   `arrivalDateDayjs` **dayjs** 
 -   `departureDateDayjs` **dayjs** 
--   `fallbackCurrency` **[string][31]** used when rate plans does not have
+-   `fallbackCurrency` **[string][38]** used when rate plans does not have
     a currency defined
--   `preferredCurrency` **([string][31] | null | [undefined][35])** You can limit the results to
+-   `preferredCurrency` **([string][38] | null | [undefined][42])** You can limit the results to
     this single currency for faster processing (optional, default `null`)
 
-Returns **[Array][25]&lt;[Object][27]>** List of usable rate plans.
+Returns **[Array][32]&lt;[Object][34]>** List of usable rate plans.
 
 [1]: #indexavailability
 
@@ -294,44 +403,58 @@ Returns **[Array][25]&lt;[Object][27]>** List of usable rate plans.
 
 [14]: #parameters-6
 
-[15]: #computestayprices
+[15]: #computedailyrateplans
 
 [16]: #parameters-7
 
-[17]: #computeprices
+[17]: #pricecomputererror
 
-[18]: #parameters-8
+[18]: #constructor
 
-[19]: #selectapplicablemodifiers
+[19]: #parameters-8
 
-[20]: #parameters-9
+[20]: #getbestpricewithsinglerateplan
 
-[21]: #selectbestguestmodifier
+[21]: #parameters-9
 
-[22]: #parameters-10
+[22]: #getpossiblepriceswithsinglerateplan
 
-[23]: #selectapplicablerateplans
+[23]: #parameters-10
 
-[24]: #parameters-11
+[24]: #getbestprice
 
-[25]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[25]: #parameters-11
 
-[26]: https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L373
+[26]: #selectapplicablemodifiers
 
-[27]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[27]: #parameters-12
 
-[28]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[28]: #selectbestguestmodifier
 
-[29]: https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L129
+[29]: #parameters-13
 
-[30]: https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L124
+[30]: #selectapplicablerateplans
 
-[31]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[31]: #parameters-14
 
-[32]: https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L136
+[32]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
 
-[33]: https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L212
+[33]: https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L373
 
-[34]: https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L296
+[34]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
-[35]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[35]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+
+[36]: https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L129
+
+[37]: https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L124
+
+[38]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+
+[39]: https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L136
+
+[40]: https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L212
+
+[41]: https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L296
+
+[42]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined

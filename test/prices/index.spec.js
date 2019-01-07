@@ -398,10 +398,10 @@ describe('prices.index', () => {
         expect(rtbResult.prices[0]).toHaveProperty('currency', fallbackCurrency);
         expect(rtbResult.prices[0]).toHaveProperty('ratePlans');
         expect(rtbResult.prices[0].ratePlans.length).toBe(2);
-        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('id', 'rpa');
+        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('ratePlan.id', 'rpa');
         expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('dailyPrices', Array.from({ length: 2 }, (_, i) => currency(100, { symbol: fallbackCurrency })));
         expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('total', currency(200, { symbol: fallbackCurrency }));
-        expect(rtbResult.prices[0].ratePlans[1]).toHaveProperty('id', 'rpb');
+        expect(rtbResult.prices[0].ratePlans[1]).toHaveProperty('ratePlan.id', 'rpb');
         expect(rtbResult.prices[0].ratePlans[1]).toHaveProperty('dailyPrices', Array.from({ length: 2 }, (_, i) => currency(60, { symbol: fallbackCurrency })));
         expect(rtbResult.prices[0].ratePlans[1]).toHaveProperty('total', currency(120, { symbol: fallbackCurrency }));
       });
@@ -437,14 +437,14 @@ describe('prices.index', () => {
         expect(rtbResult.prices[0]).toHaveProperty('currency', fallbackCurrency);
         expect(rtbResult.prices[0]).toHaveProperty('ratePlans');
         expect(rtbResult.prices[0].ratePlans.length).toBe(1);
-        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('id', 'rpa');
+        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('ratePlan.id', 'rpa');
         expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('dailyPrices', Array.from({ length: 8 }, (_, i) => currency(73, { symbol: fallbackCurrency })));
         expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('total', currency(584, { symbol: fallbackCurrency }));
       });
     });
 
     describe('getBestPriceWithSingleRatePlan', () => {
-      it.only('should return the best rate plan that fits consecutively', () => {
+      it('should return the best rate plan that fits consecutively', () => {
         computer.ratePlans[1] = {
           id: 'rpb',
           price: 60,

@@ -67,6 +67,15 @@ export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan, cur
  * @return {Object} Every key is a currency code and its value is
  * an array (every index represents a single day). For every day
  * there is a list of usable daily prices computed from a certain rate plan.
+ *
+ * ```
+ * [
+ *   {
+ *     "ratePlan": <RatePlan object>,
+ *     "dailyPrice": <Result of computeDailyPrice>
+ *   }
+ * ]
+ * ```
  */
 export const computeDailyRatePlans = (arrivalDateDayjs, departureDateDayjs, guests, hotelCurrency, applicableRatePlans) => {
   const dailyPrices = {};
@@ -160,21 +169,50 @@ export class PriceComputer {
       const applicableRatePlans = selectApplicableRatePlans(
         roomType.id, this.ratePlans, bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, this.defaultCurrency, currency
       );
-      const response = {
-        id: roomType.id,
-        prices: [],
-      };
       // no rate plans available at all, bail
       if (!applicableRatePlans.length) {
-        return response;
+        return {
+          id: roomType.id,
+          prices: [],
+        };
       }
 
       const dailyPrices = computeDailyRatePlans(arrivalDateDayjs, departureDateDayjs, guests, this.defaultCurrency, applicableRatePlans);
-      response.prices = ratePlansStrategy(dailyPrices, lengthOfStay);
-      return response;
+      return {
+        id: roomType.id,
+        prices: ratePlansStrategy(dailyPrices, lengthOfStay),
+      };
     });
   }
 
+  /**
+   * Returns the rate plan that covers the whole stay
+   * with the best price.
+   *
+   * @param  {mixed} bookingDate
+   * @param  {mixed} arrivalDate
+   * @param  {mixed} departureDate
+   * @param  {Array<Object>} guests list of information about guests,
+   * right now only the `age` field is expected
+   * @param  {string} currency optional filter by currency
+   * @param  {string} roomTypeId optional filter by roomTypeId
+   * @return {Array<Object>} List of roomTypes and their prices
+   *
+   * ```
+   * [
+   *   {
+   *     "id": "RoomTypeId",
+   *     "prices": [
+   *       {
+   *         "currency": "CZK",
+   *         "total": <currencyjs instance>,
+   *         "ratePlan": <RatePlan object>
+   *       }
+   *     ]
+   *   }
+   * ]
+   * ```
+   */
   getBestPriceWithSingleRatePlan (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {
     return this._determinePrices(bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId, (dailyPrices, lengthOfStay) => {
       const prices = [];
@@ -214,6 +252,44 @@ export class PriceComputer {
     });
   }
 
+  /**
+   *
+   * Returns all of the rate plans that cover the whole stay.
+   * A client can choose the most fitting one for their purpose.
+   *
+   * @param  {mixed} bookingDate
+   * @param  {mixed} arrivalDate
+   * @param  {mixed} departureDate
+   * @param  {Array<Object>} guests list of information about guests,
+   * right now only the `age` field is expected
+   * @param  {string} currency optional filter by currency
+   * @param  {string} roomTypeId optional filter by roomTypeId
+   * @return {Array<Object>} List of roomTypes and their prices
+   *
+   * ```
+   * [
+   *   {
+   *     "id": "RoomTypeId",
+   *     "prices": [
+   *       {
+   *         "currency": "CZK",
+   *         "ratePlans": [
+   *           {
+   *             "ratePlan": <RatePlan object>,
+   *             "dailyPrices": [
+   *               <Result of computeDailyPrice>,
+   *               <Result of computeDailyPrice>,
+   *               ...
+   *             ],
+   *             "total": <currencyjs object>
+   *           }
+   *         ]
+   *       }
+   *     ]
+   *   }
+   * ]
+   * ```
+   */
   getPossiblePricesWithSingleRatePlan (bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId) {
     return this._determinePrices(bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId, (dailyPrices, lengthOfStay) => {
       const prices = [];
@@ -239,7 +315,7 @@ export class PriceComputer {
           ratePlans: Object.values(ratePlanOccurrences)
             .filter((rp) => rp.dailyPrices.length === lengthOfStay)
             .map((rp) => ({
-              ...rp.ratePlan,
+              ratePlan: rp.ratePlan,
               dailyPrices: rp.dailyPrices,
               total: rp.dailyPrices.reduce((total, dp) => total.add(dp), currencyjs(0, { symbol: currencies[i] })),
             })),
