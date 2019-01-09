@@ -371,5 +371,26 @@ describe('cancellation-fees', () => {
       expect(result[3].to).toBe('2019-03-28');
       expect(result[3].amount).toBe(75);
     });
+
+    it('should work for edge cases with defaultPolicy', () => {
+      const result = computeCancellationFees('2018-12-01', '2019-03-28', [
+        { from: '2019-01-01', to: '2019-03-20', amount: 30, deadline: 86 },
+        { from: '2019-01-01', to: '2019-03-20', amount: 50, deadline: 51 },
+        // For the last week, default cancellation amount should be used again.
+      ], 10);
+      expect(result.length).toBe(4);
+      expect(result[0].from).toBe('2018-12-01');
+      expect(result[0].to).toBe('2018-12-31');
+      expect(result[0].amount).toBe(10);
+      expect(result[1].from).toBe('2019-01-01');
+      expect(result[1].to).toBe('2019-02-04');
+      expect(result[1].amount).toBe(30);
+      expect(result[2].from).toBe('2019-02-05');
+      expect(result[2].to).toBe('2019-03-20');
+      expect(result[2].amount).toBe(50);
+      expect(result[3].from).toBe('2019-03-21');
+      expect(result[3].to).toBe('2019-03-28');
+      expect(result[3].amount).toBe(10);
+    });
   });
 });

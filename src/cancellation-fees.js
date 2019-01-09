@@ -41,9 +41,12 @@ export const normalizePolicyDates = (bookingDateDayjs, arrivalDayjs,
       }
     }
 
+    const fromSOD = dayjs(from).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0);
+    const toEOD = dayjs(to).set('hour', 23).set('minute', 59).set('second', 59).set('millisecond', 999);
+
     return {
-      from,
-      to,
+      from: fromSOD,
+      to: toEOD,
       amount: cp.amount,
     };
   });
@@ -146,8 +149,8 @@ export const reduceFeeSchedule = (orderedSchedule) => {
 export const computeCancellationFees = (bookingDate, arrivalDate,
   cancellationPolicies, defaultCancellationAmount) => {
   // We need to cover the whole days
-  const bookingDateDayjsSOD = dayjs(bookingDate).set('hour', 0).set('minute', 0).set('second', 0);
-  const arrivalDayjsEOD = dayjs(arrivalDate).set('hour', 23).set('minute', 59).set('second', 59);
+  const bookingDateDayjsSOD = dayjs(bookingDate).set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0); ;
+  const arrivalDayjsEOD = dayjs(arrivalDate).set('hour', 23).set('minute', 59).set('second', 59).set('millisecond', 999); ;
   // Fallback to defaultCancellationAmount
   if (!cancellationPolicies || !cancellationPolicies.length) {
     return [
