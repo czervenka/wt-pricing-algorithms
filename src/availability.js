@@ -112,8 +112,8 @@ export const computeAvailability = (arrivalDate, departureDate, numberOfGuests, 
         quantity: 0,
       };
     } else if (currentAvailability !== undefined) {
-      // Departure date quantity is not actually relevant
-      dailyAvailability.push(1);
+      // If quantity is 0 on the day of departure, it does not matter
+      dailyAvailability.push(currentAvailability.quantity || 1);
     }
     // Filter out missing data and applied restrictions
     // +1 means the date of departure

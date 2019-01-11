@@ -215,14 +215,14 @@ describe('availability', () => {
     });
 
     describe('edge cases', () => {
-      it('should say 1 if 1 is set on a day of departure', () => {
+      it('should say 4 if 4 is set on a day of departure', () => {
         const availability = computeAvailability(arrivalDate, departureDate, 1, roomTypes, indexAvailability([
           availabilityRecord('rtb', '2018-01-03', 3),
           availabilityRecord('rtb', '2018-01-04', 3),
-          availabilityRecord('rtb', '2018-01-05', 1),
+          availabilityRecord('rtb', '2018-01-05', 2),
         ]));
         expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('roomTypeId', 'rtb');
-        expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('quantity', 1);
+        expect(availability.find((a) => a.roomTypeId === 'rtb')).toHaveProperty('quantity', 2);
       });
 
       it('should say 1 if 1 is set on a day of arrival', () => {
