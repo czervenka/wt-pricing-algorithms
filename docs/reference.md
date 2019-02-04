@@ -19,14 +19,14 @@
 -   [computeDailyRatePlans][15]
     -   [Parameters][16]
 -   [PriceComputerError][17]
--   [constructor][18]
+-   [PriceComputer][18]
     -   [Parameters][19]
--   [getBestPriceWithSingleRatePlan][20]
-    -   [Parameters][21]
--   [getPossiblePricesWithSingleRatePlan][22]
-    -   [Parameters][23]
--   [getBestPrice][24]
-    -   [Parameters][25]
+    -   [getBestPriceWithSingleRatePlan][20]
+        -   [Parameters][21]
+    -   [getPossiblePricesWithSingleRatePlan][22]
+        -   [Parameters][23]
+    -   [getBestPrice][24]
+        -   [Parameters][25]
 -   [selectApplicableModifiers][26]
     -   [Parameters][27]
 -   [selectBestGuestModifier][28]
@@ -205,7 +205,11 @@ there is a list of usable daily prices computed from a certain rate plan.    [
 
 Error scoped to PriceComputer
 
-## constructor
+## PriceComputer
+
+A class for computing prices. It contains
+multiple price resolution strategies for
+hotels.
 
 ### Parameters
 
@@ -216,12 +220,12 @@ Error scoped to PriceComputer
 -   `defaultCurrency` **[string][38]** currency used when a rate plan has
     no currency specified
 
-## getBestPriceWithSingleRatePlan
+### getBestPriceWithSingleRatePlan
 
 Returns the rate plan that covers the whole stay
 with the best price.
 
-### Parameters
+#### Parameters
 
 -   `bookingDate` **mixed** 
 -   `arrivalDate` **mixed** 
@@ -244,12 +248,12 @@ Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
       }
     ]
 
-## getPossiblePricesWithSingleRatePlan
+### getPossiblePricesWithSingleRatePlan
 
 Returns all of the rate plans that cover the whole stay.
 A client can choose the most fitting one for their purpose.
 
-### Parameters
+#### Parameters
 
 -   `bookingDate` **mixed** 
 -   `arrivalDate` **mixed** 
@@ -281,7 +285,7 @@ Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
       }
     ]
 
-## getBestPrice
+### getBestPrice
 
 Computes the best prices for given period of time and
 a party of guests. This picks the best rate plan
@@ -295,7 +299,7 @@ a price, a combination of rate plans in every currency
 has to cover the whole period between `arrivalDateDayjs`
 and `departureDateDayjs`.
 
-### Parameters
+#### Parameters
 
 -   `bookingDate` **mixed** anything parseable by dayjs
 -   `arrivalDate` **mixed** anything parseable by dayjs
@@ -409,7 +413,7 @@ Returns **[Array][32]&lt;[Object][34]>** List of usable rate plans.
 
 [17]: #pricecomputererror
 
-[18]: #constructor
+[18]: #pricecomputer
 
 [19]: #parameters-8
 

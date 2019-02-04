@@ -134,6 +134,11 @@ export const computeDailyRatePlans = (arrivalDateDayjs, departureDateDayjs, gues
  */
 export class PriceComputerError extends Error {};
 
+/**
+ * A class for computing prices. It contains
+ * multiple price resolution strategies for
+ * hotels.
+ */
 export class PriceComputer {
   /**
    * @param  {Array<Object>} roomTypes List of room types as defined
