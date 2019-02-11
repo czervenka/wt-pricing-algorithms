@@ -1,8 +1,10 @@
 {
   "name": "@windingtree/wt-pricing-algorithms",
   "version": "0.4.2",
-  "description": "Javascript libraries to interact with the Winding Tree contracts",
-  "main": "dist/web/wt-pricing-algorithms.js",
+  "description": "Javascript libraries to compute prices from Winding Tree data model",
+  "main": "dist/cjs/wt-pricing-algorithms.js",
+  "browser": "dist/umd/wt-pricing-algorithms.js",
+  "module": "dist/es/wt-pricing-algorithms.js",
   "directories": {
     "test": "test"
   },
@@ -12,7 +14,7 @@
     "test-watch": "jest --watch",
     "coverage": "cat coverage/lcov.info | coveralls",
     "clean": "rimraf dist && rimraf docs",
-    "build": "webpack --config webpack.config.js --mode production",
+    "build": "rollup -c rollup.config.js",
     "docs": "rimraf docs && mkdir docs && documentation build src/** -f md -o docs/reference.md"
   },
   "publishConfig": {
@@ -27,10 +29,6 @@
   ],
   "author": "Winding Tree Developers <dev@windingtree.com>",
   "license": "Apache-2.0",
-  "browser": {
-    "fs": false,
-    "child_process": false
-  },
   "dependencies": {
     "@babel/runtime": "^7.0.0",
     "dayjs": "^1.7.7",
@@ -41,14 +39,14 @@
     "@babel/plugin-proposal-class-properties": "^7.1.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
     "@babel/plugin-syntax-dynamic-import": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.0.0",
     "@babel/preset-env": "^7.1.5",
     "@babel/preset-react": "^7.0.0",
-    "@babel/plugin-transform-runtime": "^7.0.0",
-    "babel-plugin-transform-builtin-extend": "^1.1.2",
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^10.0.1",
     "babel-jest": "^23.6.0",
     "babel-loader": "^8.0.4",
+    "babel-plugin-transform-builtin-extend": "^1.1.2",
     "coveralls": "^3.0.1",
     "documentation": "^9.0.0",
     "esdoc": "^1.1.0",
@@ -57,18 +55,18 @@
     "esdoc-standard-plugin": "^1.0.0",
     "eslint": "^5.2.0",
     "eslint-config-standard": "^12.0.0",
-    "eslint-plugin-jest": "^22.0.0",
     "eslint-plugin-import": "^2.13.0",
+    "eslint-plugin-jest": "^22.0.0",
     "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-promise": "^4.0.0",
     "eslint-plugin-standard": "^4.0.0",
     "flow-bin": "^0.88.0",
-    "rimraf": "^2.6.2",
     "jest": "^23.6.0",
-    "webpack": "^4.21.0",
-    "webpack-bundle-size-analyzer": "^3.0.0",
-    "webpack-cli": "^3.1.0",
-    "webpack-node-externals": "^1.7.2"
+    "rimraf": "^2.6.2",
+    "rollup": "^1.1.2",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-terser": "^4.0.4"
   },
   "engines": {
     "node": ">=10.0.0"
