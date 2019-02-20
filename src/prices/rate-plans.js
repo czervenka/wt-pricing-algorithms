@@ -22,6 +22,10 @@ export const selectApplicableModifiers = (modifiers, dateDayjs, lengthOfStay, nu
   // get deleted later.
   const elementsToDrop = [];
   const applicableModifiers = modifiers.filter((mod) => {
+    // no or invalid type - no modifier
+    if (!mod.type || ['percentage', 'absolute'].indexOf(mod.type) === -1) {
+      return false;
+    }
     // no conditions - no modifier
     if (!mod.conditions) {
       return false;
@@ -75,35 +79,42 @@ export const selectApplicableModifiers = (modifiers, dateDayjs, lengthOfStay, nu
  * with given age. If no age based modifier is applicable,
  * the best one from non-specific modifiers is used.
  *
+ * @param {currencyjs} Base price
  * @param  {Array<Object>} modifiers List of rate plan modifiers as
  * defined in https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L296
  * @param  {Number} age Guest's age
  * @return {Object} The modifier with the best rate in
  * favour of a guest.
  */
-export const selectBestGuestModifier = (modifiers, age) => {
+export const selectBestGuestModifier = (basePrice, modifiers, age) => {
   const ageModifiers = modifiers.filter(mod => mod.conditions.maxAge !== undefined);
   const selectedAgeModifier = ageModifiers.reduce((best, current) => {
     if (current.conditions.maxAge >= age && ( // guest is under the bar
       !best || // no best has yet been setup
       // current has a closer limit than the best
-      best.conditions.maxAge > current.conditions.maxAge ||
-      ( // the limit is the same, but current has better price adjustment
-        best.conditions.maxAge === current.conditions.maxAge &&
-        best.adjustment > current.adjustment
-      )
+      best.conditions.maxAge >= current.conditions.maxAge
     )) {
-      return current;
+      const change = current.type === 'percentage' ? (current.adjustment / 100) * basePrice : current.adjustment;
+      // always return pro-customer price for now
+      if (!best || change <= best.change) {
+        current.change = change;
+        return current;
+      }
     }
     return best;
   }, undefined);
+
   if (selectedAgeModifier) {
     return selectedAgeModifier;
   }
   // Fallback to a best offer, no age-specific modifier matched
   const genericModifiers = modifiers
-    .filter(mod => mod.conditions.maxAge === undefined)
-    .sort((a, b) => (a.adjustment <= b.adjustment ? -1 : 1));
+    .filter(mod => mod.conditions && mod.conditions.maxAge === undefined)
+    .map((mod) => {
+      mod.change = mod.type === 'percentage' ? (mod.adjustment / 100) * basePrice : mod.adjustment;
+      return mod;
+    })
+    .sort((a, b) => (a.change <= b.change ? -1 : 1));
   return genericModifiers[0];
 };
 

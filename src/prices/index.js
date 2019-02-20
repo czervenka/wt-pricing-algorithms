@@ -29,15 +29,15 @@ export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan, cur
 
   const guestPrices = [];
   let selectedModifier;
-  let adjustment;
+  let delta;
   for (let i = 0; i < guests.length; i += 1) {
-    adjustment = 0;
+    delta = 0;
     // Pick the best modifier for each guest and adjust the price
-    selectedModifier = selectBestGuestModifier(applicableModifiers, guests[i].age);
-    if (selectedModifier) {
-      adjustment = (selectedModifier.adjustment / 100) * ratePlan.price;
+    selectedModifier = selectBestGuestModifier(ratePlan.price, applicableModifiers, guests[i].age);
+    if (selectedModifier && selectedModifier.change) {
+      delta = selectedModifier.change;
     }
-    guestPrices.push(ratePlan.price + adjustment);
+    guestPrices.push(ratePlan.price + delta);
   }
   return guestPrices.reduce((a, b) => a.add(currencyjs(b, { symbol: currentCurrency })), currencyjs(0, { symbol: currentCurrency }));
 };
