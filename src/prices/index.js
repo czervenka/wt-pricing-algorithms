@@ -142,9 +142,9 @@ export class PriceComputerError extends Error {};
 export class PriceComputer {
   /**
    * @param  {Array<Object>} roomTypes List of room types as defined
-   * in https://github.com/windingtree/wiki/blob/368a2a6fb752ad00dac326e09a9b1877d4591755/hotel-data-swagger.yaml
+   * in https://github.com/windingtree/wiki/blob/868b5d2685b1cd70647020978141be820ddccd30/hotel-data-swagger.yaml
    * @param  {Array<Object>} ratePlans List of rate plans as defined in
-   * https://github.com/windingtree/wiki/blob/368a2a6fb752ad00dac326e09a9b1877d4591755/hotel-data-swagger.yaml
+   * https://github.com/windingtree/wiki/blob/868b5d2685b1cd70647020978141be820ddccd30/hotel-data-swagger.yaml
    * @param  {string} defaultCurrency currency used when a rate plan has
    * no currency specified
    */

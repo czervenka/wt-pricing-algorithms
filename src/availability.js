@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
  * Transforms raw array of availability records to an
  * object indexeed by roomTypeId and date.
  *
- * @param  {Array} availability as defined in https://github.com/windingtree/wiki/blob/368a2a6fb752ad00dac326e09a9b1877d4591755/hotel-data-swagger.yaml
+ * @param  {Array} availability as defined in https://github.com/windingtree/wiki/blob/868b5d2685b1cd70647020978141be820ddccd30/hotel-data-swagger.yaml
  * @return {Object} such as
  * ```
  * {

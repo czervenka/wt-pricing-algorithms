@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
  * Picks rate plans modifiers applicable under given conditions.
  *
  * @param  {Array<Object>} modifiers List of rate plan modifiers as
- * defined in https://github.com/windingtree/wiki/blob/368a2a6fb752ad00dac326e09a9b1877d4591755/hotel-data-swagger.yaml
+ * defined in https://github.com/windingtree/wiki/blob/868b5d2685b1cd70647020978141be820ddccd30/hotel-data-swagger.yaml
  * @param  {dayjs} dateDayjs A date for which we want to apply modifiers
  * @param  {Number} lengthOfStay
  * @param  {Number} numberOfGuests
@@ -81,7 +81,7 @@ export const selectApplicableModifiers = (modifiers, dateDayjs, lengthOfStay, nu
  *
  * @param {currencyjs} Base price
  * @param  {Array<Object>} modifiers List of rate plan modifiers as
- * defined in https://github.com/windingtree/wiki/blob/368a2a6fb752ad00dac326e09a9b1877d4591755/hotel-data-swagger.yaml
+ * defined in https://github.com/windingtree/wiki/blob/868b5d2685b1cd70647020978141be820ddccd30/hotel-data-swagger.yaml
  * @param  {Number} age Guest's age
  * @return {Object} The modifier with the best rate in
  * favour of a guest.
@@ -124,7 +124,7 @@ export const selectBestGuestModifier = (basePrice, modifiers, age) => {
  *
  * @param  {string} roomTypeId
  * @param  {Array<Object>} ratePlans list of rate plans as defined in
- * https://github.com/windingtree/wiki/blob/368a2a6fb752ad00dac326e09a9b1877d4591755/hotel-data-swagger.yaml
+ * https://github.com/windingtree/wiki/blob/868b5d2685b1cd70647020978141be820ddccd30/hotel-data-swagger.yaml
  * @param  {dayjs} bookingDateDayjs
  * @param  {dayjs} arrivalDateDayjs
  * @param  {dayjs} departureDateDayjs
