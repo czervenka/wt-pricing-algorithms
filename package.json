@@ -1,6 +1,6 @@
 {
   "name": "@windingtree/wt-pricing-algorithms",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Javascript libraries to compute prices from Winding Tree data model",
   "main": "dist/cjs/wt-pricing-algorithms.js",
   "browser": "dist/umd/wt-pricing-algorithms.js",
