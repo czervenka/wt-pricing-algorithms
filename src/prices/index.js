@@ -29,15 +29,15 @@ export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan, cur
 
   const guestPrices = [];
   let selectedModifier;
-  let adjustment;
+  let delta;
   for (let i = 0; i < guests.length; i += 1) {
-    adjustment = 0;
+    delta = 0;
     // Pick the best modifier for each guest and adjust the price
-    selectedModifier = selectBestGuestModifier(applicableModifiers, guests[i].age);
-    if (selectedModifier) {
-      adjustment = (selectedModifier.adjustment / 100) * ratePlan.price;
+    selectedModifier = selectBestGuestModifier(ratePlan.price, applicableModifiers, guests[i].age);
+    if (selectedModifier && selectedModifier.change) {
+      delta = selectedModifier.change;
     }
-    guestPrices.push(ratePlan.price + adjustment);
+    guestPrices.push(ratePlan.price + delta);
   }
   return guestPrices.reduce((a, b) => a.add(currencyjs(b, { symbol: currentCurrency })), currencyjs(0, { symbol: currentCurrency }));
 };
@@ -142,9 +142,9 @@ export class PriceComputerError extends Error {};
 export class PriceComputer {
   /**
    * @param  {Array<Object>} roomTypes List of room types as defined
-   * in https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L136
+   * in https://github.com/windingtree/wiki/blob/868b5d2685b1cd70647020978141be820ddccd30/hotel-data-swagger.yaml
    * @param  {Array<Object>} ratePlans List of rate plans as defined in
-   * https://github.com/windingtree/wiki/blob/d64397e5fb6e439f8436ed856f60664d08ae9b48/hotel-data-swagger.yaml#L212
+   * https://github.com/windingtree/wiki/blob/868b5d2685b1cd70647020978141be820ddccd30/hotel-data-swagger.yaml
    * @param  {string} defaultCurrency currency used when a rate plan has
    * no currency specified
    */
