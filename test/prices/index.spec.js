@@ -485,8 +485,8 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
-            { adjustment: 25, type: 'percentage', conditions: {} },
-            { adjustment: 50, type: 'percentage', conditions: {} },
+            { adjustment: 25, unit: 'percentage', conditions: {} },
+            { adjustment: 50, unit: 'percentage', conditions: {} },
           ],
         }).format()).toBe(currency(10).format());
       });
@@ -495,8 +495,8 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
-            { adjustment: -25, type: 'percentage', conditions: {} },
-            { adjustment: -50, type: 'percentage', conditions: {} },
+            { adjustment: -25, unit: 'percentage', conditions: {} },
+            { adjustment: -50, unit: 'percentage', conditions: {} },
           ],
         }).format()).toBe(currency(4).format());
       });
@@ -505,10 +505,10 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
-            { adjustment: -25, type: 'percentage', conditions: {} },
-            { adjustment: -10, type: 'percentage', conditions: {} },
-            { adjustment: 13, type: 'percentage', conditions: {} },
-            { adjustment: 50, type: 'percentage', conditions: {} },
+            { adjustment: -25, unit: 'percentage', conditions: {} },
+            { adjustment: -10, unit: 'percentage', conditions: {} },
+            { adjustment: 13, unit: 'percentage', conditions: {} },
+            { adjustment: 50, unit: 'percentage', conditions: {} },
           ],
         }).format()).toBe(currency(6).format());
       });
@@ -519,8 +519,8 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
-            { adjustment: 25, type: 'absolute', conditions: {} },
-            { adjustment: 50, type: 'absolute', conditions: {} },
+            { adjustment: 25, unit: 'absolute', conditions: {} },
+            { adjustment: 50, unit: 'absolute', conditions: {} },
           ],
         }).format()).toBe(currency(33).format());
       });
@@ -529,8 +529,8 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
-            { adjustment: -25, type: 'absolute', conditions: {} },
-            { adjustment: -50, type: 'absolute', conditions: {} },
+            { adjustment: -25, unit: 'absolute', conditions: {} },
+            { adjustment: -50, unit: 'absolute', conditions: {} },
           ],
         }).format()).toBe(currency(-42).format());
       });
@@ -539,10 +539,10 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
-            { adjustment: -25, type: 'absolute', conditions: {} },
-            { adjustment: -10, type: 'absolute', conditions: {} },
-            { adjustment: 13, type: 'absolute', conditions: {} },
-            { adjustment: 50, type: 'absolute', conditions: {} },
+            { adjustment: -25, unit: 'absolute', conditions: {} },
+            { adjustment: -10, unit: 'absolute', conditions: {} },
+            { adjustment: 13, unit: 'absolute', conditions: {} },
+            { adjustment: 50, unit: 'absolute', conditions: {} },
           ],
         }).format()).toBe(currency(-17).format());
       });
@@ -553,8 +553,8 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
-            { adjustment: 25, type: 'percentage', conditions: {} },
-            { adjustment: 1, type: 'absolute', conditions: {} },
+            { adjustment: 25, unit: 'percentage', conditions: {} },
+            { adjustment: 1, unit: 'absolute', conditions: {} },
           ],
         }).format()).toBe(currency(9).format());
       });
@@ -563,8 +563,8 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
-            { adjustment: -25, type: 'percentage', conditions: {} },
-            { adjustment: -1, type: 'absolute', conditions: {} },
+            { adjustment: -25, unit: 'percentage', conditions: {} },
+            { adjustment: -1, unit: 'absolute', conditions: {} },
           ],
         }).format()).toBe(currency(6).format());
       });
@@ -573,10 +573,10 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
-            { adjustment: -25, type: 'percentage', conditions: {} },
-            { adjustment: -10, type: 'percentage', conditions: {} },
-            { adjustment: 1, type: 'absolute', conditions: {} },
-            { adjustment: -1, type: 'absolute', conditions: {} },
+            { adjustment: -25, unit: 'percentage', conditions: {} },
+            { adjustment: -10, unit: 'percentage', conditions: {} },
+            { adjustment: 1, unit: 'absolute', conditions: {} },
+            { adjustment: -1, unit: 'absolute', conditions: {} },
           ],
         }).format()).toBe(currency(6).format());
       });
@@ -587,8 +587,8 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
-            { adjustment: -75, type: 'percentage', conditions: { minOccupants: 2 } },
-            { adjustment: -50, type: 'percentage', conditions: { lengthOfStay: 3 } },
+            { adjustment: -75, unit: 'percentage', conditions: { minOccupants: 2 } },
+            { adjustment: -50, unit: 'percentage', conditions: { lengthOfStay: 3 } },
           ],
         }).format()).toBe(currency(2 * 2).format());
       });
@@ -597,9 +597,9 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
           price: 10,
           modifiers: [
-            { adjustment: -25, type: 'percentage', conditions: { minOccupants: 2 } },
-            { adjustment: -10, type: 'percentage', conditions: { lengthOfStay: 3 } },
-            { adjustment: -20, type: 'percentage', conditions: { maxAge: 16 } },
+            { adjustment: -25, unit: 'percentage', conditions: { minOccupants: 2 } },
+            { adjustment: -10, unit: 'percentage', conditions: { lengthOfStay: 3 } },
+            { adjustment: -20, unit: 'percentage', conditions: { maxAge: 16 } },
           ],
         }).format()).toBe(currency(8 + 7.5).format());
       });
@@ -608,8 +608,8 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
           price: 10,
           modifiers: [
-            { adjustment: -20, type: 'percentage', conditions: { minOccupants: 2, maxAge: 16 } },
-            { adjustment: -25, type: 'percentage', conditions: { minOccupants: 3, maxAge: 16 } },
+            { adjustment: -20, unit: 'percentage', conditions: { minOccupants: 2, maxAge: 16 } },
+            { adjustment: -25, unit: 'percentage', conditions: { minOccupants: 3, maxAge: 16 } },
           ],
         }).format()).toBe(currency(10 + 8).format());
       });
@@ -618,8 +618,8 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
           price: 10,
           modifiers: [
-            { adjustment: -20, type: 'percentage', conditions: { lengthOfStay: 2, maxAge: 16 } },
-            { adjustment: -25, type: 'percentage', conditions: { lengthOfStay: 3, maxAge: 16 } },
+            { adjustment: -20, unit: 'percentage', conditions: { lengthOfStay: 2, maxAge: 16 } },
+            { adjustment: -25, unit: 'percentage', conditions: { lengthOfStay: 3, maxAge: 16 } },
           ],
         }).format()).toBe(currency(10 + 7.5).format());
       });
@@ -628,10 +628,10 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
           price: 10,
           modifiers: [
-            { adjustment: -10, type: 'percentage', conditions: { lengthOfStay: 2, minOccupants: 2, maxAge: 16 } },
-            { adjustment: -20, type: 'percentage', conditions: { lengthOfStay: 3, minOccupants: 3, maxAge: 16 } },
-            { adjustment: -30, type: 'percentage', conditions: { lengthOfStay: 3, minOccupants: 2, maxAge: 16 } },
-            { adjustment: -40, type: 'percentage', conditions: { lengthOfStay: 2, minOccupants: 3, maxAge: 16 } },
+            { adjustment: -10, unit: 'percentage', conditions: { lengthOfStay: 2, minOccupants: 2, maxAge: 16 } },
+            { adjustment: -20, unit: 'percentage', conditions: { lengthOfStay: 3, minOccupants: 3, maxAge: 16 } },
+            { adjustment: -30, unit: 'percentage', conditions: { lengthOfStay: 3, minOccupants: 2, maxAge: 16 } },
+            { adjustment: -40, unit: 'percentage', conditions: { lengthOfStay: 2, minOccupants: 3, maxAge: 16 } },
           ],
         }).format()).toBe(currency(10 + 7).format());
       });
@@ -642,7 +642,7 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 11 }, { age: 18 }, { age: 30 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
-            { adjustment: -25, type: 'percentage', conditions: { maxAge: 18 } },
+            { adjustment: -25, unit: 'percentage', conditions: { maxAge: 18 } },
           ],
         }).format()).toBe(currency(8 * 1 + 6 * 2).format());
       });
@@ -651,9 +651,9 @@ describe('prices.index', () => {
         expect(computeDailyPrice([{ age: 25 }, { age: 18 }, { age: 16 }], 3, '2018-09-12', {
           price: 8,
           modifiers: [
-            { adjustment: -10, type: 'percentage', conditions: { maxAge: 25 } },
-            { adjustment: -50, type: 'percentage', conditions: { maxAge: 18 } },
-            { adjustment: -25, type: 'percentage', conditions: { maxAge: 16 } },
+            { adjustment: -10, unit: 'percentage', conditions: { maxAge: 25 } },
+            { adjustment: -50, unit: 'percentage', conditions: { maxAge: 18 } },
+            { adjustment: -25, unit: 'percentage', conditions: { maxAge: 16 } },
           ],
         }).format()).toBe(currency(7.2 + 4 + 4).format());
       });

@@ -329,7 +329,7 @@ describe('prices.rate-plans', () => {
     it('should drop modifiers with an unknown type', () => {
       const modifiers = selectApplicableModifiers(
         [
-          { adjustment: 10, type: 'unknown' },
+          { adjustment: 10, unit: 'unknown' },
         ], dayjs('2018-09-12'), 3, 1
       );
       expect(modifiers.length).toBe(0);
@@ -338,7 +338,7 @@ describe('prices.rate-plans', () => {
     it('should drop modifiers without conditions', () => {
       const modifiers = selectApplicableModifiers(
         [
-          { adjustment: 10, type: 'percentage' },
+          { adjustment: 10, unit: 'percentage' },
         ], dayjs('2018-09-12'), 3, 1
       );
       expect(modifiers.length).toBe(0);
@@ -347,9 +347,9 @@ describe('prices.rate-plans', () => {
     it('should pass through guest specific modifiers', () => {
       const modifiers = selectApplicableModifiers(
         [
-          { adjustment: -25, type: 'percentage', conditions: { maxAge: 10 } },
-          { adjustment: -33, type: 'percentage', conditions: { maxAge: 12 } },
-          { adjustment: -100, type: 'absolute', conditions: { maxAge: 12 } },
+          { adjustment: -25, unit: 'percentage', conditions: { maxAge: 10 } },
+          { adjustment: -33, unit: 'percentage', conditions: { maxAge: 12 } },
+          { adjustment: -100, unit: 'absolute', conditions: { maxAge: 12 } },
         ], dayjs('2018-09-12'), 3, 1
       );
       expect(modifiers.length).toBe(3);
@@ -361,7 +361,7 @@ describe('prices.rate-plans', () => {
           [
             {
               adjustment: -25,
-              type: 'percentage',
+              unit: 'percentage',
               conditions: {
                 from: '2018-01-09',
                 to: '2018-09-20',
@@ -377,7 +377,7 @@ describe('prices.rate-plans', () => {
           [
             {
               adjustment: -25,
-              type: 'percentage',
+              unit: 'percentage',
               conditions: {
                 from: '2018-09-12',
                 to: '2018-09-20',
@@ -393,7 +393,7 @@ describe('prices.rate-plans', () => {
           [
             {
               adjustment: -25,
-              type: 'percentage',
+              unit: 'percentage',
               conditions: {
                 from: '2018-09-10',
                 to: '2018-09-12',
@@ -409,7 +409,7 @@ describe('prices.rate-plans', () => {
           [
             {
               adjustment: -25,
-              type: 'percentage',
+              unit: 'percentage',
               conditions: {
                 from: '2018-09-10',
                 to: '2018-08-12',
@@ -425,7 +425,7 @@ describe('prices.rate-plans', () => {
           [
             {
               adjustment: -25,
-              type: 'percentage',
+              unit: 'percentage',
               conditions: {
                 from: '2018-09-10',
               },
@@ -440,7 +440,7 @@ describe('prices.rate-plans', () => {
           [
             {
               adjustment: -25,
-              type: 'percentage',
+              unit: 'percentage',
               conditions: {
                 from: '2018-09-16',
               },
@@ -455,7 +455,7 @@ describe('prices.rate-plans', () => {
           [
             {
               adjustment: -25,
-              type: 'percentage',
+              unit: 'percentage',
               conditions: {
                 to: '2018-09-13',
               },
@@ -470,7 +470,7 @@ describe('prices.rate-plans', () => {
           [
             {
               adjustment: -25,
-              type: 'percentage',
+              unit: 'percentage',
               conditions: {
                 to: '2018-09-10',
               },
@@ -485,7 +485,7 @@ describe('prices.rate-plans', () => {
       it('should not apply modifier if LOS is shorter', () => {
         const modifiers = selectApplicableModifiers(
           [
-            { adjustment: -25, type: 'percentage', conditions: { minLengthOfStay: 5 } },
+            { adjustment: -25, unit: 'percentage', conditions: { minLengthOfStay: 5 } },
           ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(0);
@@ -494,7 +494,7 @@ describe('prices.rate-plans', () => {
       it('should apply modifier if LOS is equal', () => {
         const modifiers = selectApplicableModifiers(
           [
-            { adjustment: -25, type: 'percentage', conditions: { minLengthOfStay: 3 } },
+            { adjustment: -25, unit: 'percentage', conditions: { minLengthOfStay: 3 } },
           ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(1);
@@ -503,7 +503,7 @@ describe('prices.rate-plans', () => {
       it('should apply modifier if LOS is longer', () => {
         const modifiers = selectApplicableModifiers(
           [
-            { adjustment: -25, type: 'percentage', conditions: { minLengthOfStay: 5 } },
+            { adjustment: -25, unit: 'percentage', conditions: { minLengthOfStay: 5 } },
           ], dayjs('2018-09-12'), 7, 1
         );
         expect(modifiers.length).toBe(1);
@@ -512,8 +512,8 @@ describe('prices.rate-plans', () => {
       it('should apply modifier with the biggest applicable LOS', () => {
         let modifiers = selectApplicableModifiers(
           [
-            { adjustment: -25, type: 'percentage', conditions: { minLengthOfStay: 5 } },
-            { adjustment: -10, type: 'percentage', conditions: { minLengthOfStay: 7 } },
+            { adjustment: -25, unit: 'percentage', conditions: { minLengthOfStay: 5 } },
+            { adjustment: -10, unit: 'percentage', conditions: { minLengthOfStay: 7 } },
           ], dayjs('2018-09-12'), 7, 1
         );
         expect(modifiers.length).toBe(1);
@@ -521,8 +521,8 @@ describe('prices.rate-plans', () => {
 
         modifiers = selectApplicableModifiers(
           [
-            { adjustment: -10, type: 'percentage', conditions: { minLengthOfStay: 7 } },
-            { adjustment: -25, type: 'percentage', conditions: { minLengthOfStay: 5 } },
+            { adjustment: -10, unit: 'percentage', conditions: { minLengthOfStay: 7 } },
+            { adjustment: -25, unit: 'percentage', conditions: { minLengthOfStay: 5 } },
           ], dayjs('2018-09-12'), 7, 1
         );
         expect(modifiers.length).toBe(1);
@@ -530,9 +530,9 @@ describe('prices.rate-plans', () => {
 
         modifiers = selectApplicableModifiers(
           [
-            { adjustment: -50, type: 'percentage', conditions: { minLengthOfStay: 6 } },
-            { adjustment: -10, type: 'percentage', conditions: { minLengthOfStay: 7 } },
-            { adjustment: -25, type: 'percentage', conditions: { minLengthOfStay: 5 } },
+            { adjustment: -50, unit: 'percentage', conditions: { minLengthOfStay: 6 } },
+            { adjustment: -10, unit: 'percentage', conditions: { minLengthOfStay: 7 } },
+            { adjustment: -25, unit: 'percentage', conditions: { minLengthOfStay: 5 } },
           ], dayjs('2018-09-12'), 7, 1
         );
         expect(modifiers.length).toBe(1);
@@ -544,7 +544,7 @@ describe('prices.rate-plans', () => {
       it('should not apply modifier if number of guests is smaller', () => {
         const modifiers = selectApplicableModifiers(
           [
-            { adjustment: -25, type: 'percentage', conditions: { minOccupants: 5 } },
+            { adjustment: -25, unit: 'percentage', conditions: { minOccupants: 5 } },
           ], dayjs('2018-09-12'), 3, 1
         );
         expect(modifiers.length).toBe(0);
@@ -553,7 +553,7 @@ describe('prices.rate-plans', () => {
       it('should apply modifier if number of guests is equal', () => {
         const modifiers = selectApplicableModifiers(
           [
-            { adjustment: -25, type: 'percentage', conditions: { minOccupants: 3 } },
+            { adjustment: -25, unit: 'percentage', conditions: { minOccupants: 3 } },
           ], dayjs('2018-09-12'), 3, 3
         );
         expect(modifiers.length).toBe(1);
@@ -562,7 +562,7 @@ describe('prices.rate-plans', () => {
       it('should apply modifier if number of guests is larger', () => {
         const modifiers = selectApplicableModifiers(
           [
-            { adjustment: -25, type: 'percentage', conditions: { minOccupants: 5 } },
+            { adjustment: -25, unit: 'percentage', conditions: { minOccupants: 5 } },
           ], dayjs('2018-09-12'), 3, 10
         );
         expect(modifiers.length).toBe(1);
@@ -571,8 +571,8 @@ describe('prices.rate-plans', () => {
       it('should apply modifier with the biggest applicable minOccupants', () => {
         const modifiers = selectApplicableModifiers(
           [
-            { adjustment: -10, type: 'percentage', conditions: { minOccupants: 7 } },
-            { adjustment: -25, type: 'percentage', conditions: { minOccupants: 5 } },
+            { adjustment: -10, unit: 'percentage', conditions: { minOccupants: 7 } },
+            { adjustment: -25, unit: 'percentage', conditions: { minOccupants: 5 } },
           ], dayjs('2018-09-12'), 3, 7
         );
         expect(modifiers.length).toBe(1);
@@ -584,8 +584,8 @@ describe('prices.rate-plans', () => {
   describe('selectBestGuestModifier', () => {
     it('should pick the overall best modifier', () => {
       const modifier = selectBestGuestModifier(50, [
-        { adjustment: -12, type: 'percentage', conditions: {} },
-        { adjustment: -10, type: 'absolute', conditions: {} },
+        { adjustment: -12, unit: 'percentage', conditions: {} },
+        { adjustment: -10, unit: 'absolute', conditions: {} },
       ], 11);
       expect(modifier.adjustment).toBe(-10);
       expect(modifier.change).toBe(-10);
@@ -593,7 +593,7 @@ describe('prices.rate-plans', () => {
 
     it('should properly report the required change for percentage modifier', () => {
       const modifier = selectBestGuestModifier(50, [
-        { adjustment: -50, type: 'percentage', conditions: {} },
+        { adjustment: -50, unit: 'percentage', conditions: {} },
       ], 11);
       expect(modifier.adjustment).toBe(-50);
       expect(modifier.change).toBe(-25);
@@ -601,7 +601,7 @@ describe('prices.rate-plans', () => {
 
     it('should properly report the required change for absolute modifier', () => {
       const modifier = selectBestGuestModifier(50, [
-        { adjustment: -13, type: 'absolute', conditions: {} },
+        { adjustment: -13, unit: 'absolute', conditions: {} },
       ], 11);
       expect(modifier.adjustment).toBe(-13);
       expect(modifier.change).toBe(-13);
@@ -610,30 +610,30 @@ describe('prices.rate-plans', () => {
     describe('maxAge', () => {
       it('should not apply modifier to a guest over the limit', () => {
         const modifier = selectBestGuestModifier(50, [
-          { adjustment: -25, type: 'percentage', conditions: { maxAge: 10 } },
+          { adjustment: -25, unit: 'percentage', conditions: { maxAge: 10 } },
         ], 11);
         expect(modifier).toBeUndefined();
       });
 
       it('should apply modifier to a guest under the limit', () => {
         const modifier = selectBestGuestModifier(50, [
-          { adjustment: -25, type: 'percentage', conditions: { maxAge: 10 } },
+          { adjustment: -25, unit: 'percentage', conditions: { maxAge: 10 } },
         ], 9);
         expect(modifier).not.toBeUndefined();
       });
 
       it('should apply modifier to a guest at the limit', () => {
         const modifier = selectBestGuestModifier(50, [
-          { adjustment: -25, type: 'percentage', conditions: { maxAge: 10 } },
+          { adjustment: -25, unit: 'percentage', conditions: { maxAge: 10 } },
         ], 10);
         expect(modifier).not.toBeUndefined();
       });
 
       it('should apply modifier with the highest fitting limit', () => {
         const modifier = selectBestGuestModifier(50, [
-          { adjustment: -10, type: 'percentage', conditions: { maxAge: 25 } },
-          { adjustment: -17, type: 'absolute', conditions: { maxAge: 18 } },
-          { adjustment: -25, type: 'percentage', conditions: { maxAge: 16 } },
+          { adjustment: -10, unit: 'percentage', conditions: { maxAge: 25 } },
+          { adjustment: -17, unit: 'absolute', conditions: { maxAge: 18 } },
+          { adjustment: -25, unit: 'percentage', conditions: { maxAge: 16 } },
         ], 16);
         expect(modifier).not.toBeUndefined();
         expect(modifier.adjustment).toBe(-17);
@@ -642,20 +642,20 @@ describe('prices.rate-plans', () => {
 
       it('should apply a fitting modifier with best change', () => {
         const modifier = selectBestGuestModifier(50, [
-          { adjustment: -75, type: 'percentage', conditions: { maxAge: 18 } },
-          { adjustment: -25, type: 'percentage', conditions: { maxAge: 16 } },
-          { adjustment: -50, type: 'absolute', conditions: { maxAge: 18 } },
-          { adjustment: -10, type: 'absolute', conditions: { maxAge: 16 } },
+          { adjustment: -75, unit: 'percentage', conditions: { maxAge: 18 } },
+          { adjustment: -25, unit: 'percentage', conditions: { maxAge: 16 } },
+          { adjustment: -50, unit: 'absolute', conditions: { maxAge: 18 } },
+          { adjustment: -10, unit: 'absolute', conditions: { maxAge: 16 } },
         ], 16);
         expect(modifier).not.toBeUndefined();
         expect(modifier.adjustment).toBe(-50);
         expect(modifier.change).toBe(-50);
 
         const modifier2 = selectBestGuestModifier(50, [
-          { adjustment: -75, type: 'percentage', conditions: { maxAge: 18 } },
-          { adjustment: -100, type: 'percentage', conditions: { maxAge: 16 } },
-          { adjustment: -30, type: 'absolute', conditions: { maxAge: 18 } },
-          { adjustment: -15, type: 'absolute', conditions: { maxAge: 16 } },
+          { adjustment: -75, unit: 'percentage', conditions: { maxAge: 18 } },
+          { adjustment: -100, unit: 'percentage', conditions: { maxAge: 16 } },
+          { adjustment: -30, unit: 'absolute', conditions: { maxAge: 18 } },
+          { adjustment: -15, unit: 'absolute', conditions: { maxAge: 16 } },
         ], 16);
         expect(modifier2).not.toBeUndefined();
         expect(modifier2.adjustment).toBe(-100);

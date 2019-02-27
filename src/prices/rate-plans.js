@@ -22,8 +22,8 @@ export const selectApplicableModifiers = (modifiers, dateDayjs, lengthOfStay, nu
   // get deleted later.
   const elementsToDrop = [];
   const applicableModifiers = modifiers.filter((mod) => {
-    // no or invalid type - no modifier
-    if (!mod.type || ['percentage', 'absolute'].indexOf(mod.type) === -1) {
+    // no or invalid unit - no modifier
+    if (!mod.unit || ['percentage', 'absolute'].indexOf(mod.unit) === -1) {
       return false;
     }
     // no conditions - no modifier
@@ -94,7 +94,7 @@ export const selectBestGuestModifier = (basePrice, modifiers, age) => {
       // current has a closer limit than the best
       best.conditions.maxAge >= current.conditions.maxAge
     )) {
-      const change = current.type === 'percentage' ? (current.adjustment / 100) * basePrice : current.adjustment;
+      const change = current.unit === 'percentage' ? (current.adjustment / 100) * basePrice : current.adjustment;
       // always return pro-customer price for now
       if (!best || change <= best.change) {
         current.change = change;
@@ -111,7 +111,7 @@ export const selectBestGuestModifier = (basePrice, modifiers, age) => {
   const genericModifiers = modifiers
     .filter(mod => mod.conditions && mod.conditions.maxAge === undefined)
     .map((mod) => {
-      mod.change = mod.type === 'percentage' ? (mod.adjustment / 100) * basePrice : mod.adjustment;
+      mod.change = mod.unit === 'percentage' ? (mod.adjustment / 100) * basePrice : mod.adjustment;
       return mod;
     })
     .sort((a, b) => (a.change <= b.change ? -1 : 1));
