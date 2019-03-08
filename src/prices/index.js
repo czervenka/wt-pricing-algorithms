@@ -23,23 +23,28 @@ export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan, cur
   const applicableModifiers = selectApplicableModifiers(
     ratePlan.modifiers, dateDayjs, lengthOfStay, guests.length
   );
-  if (!applicableModifiers.length) {
-    return currencyjs(ratePlan.price, { symbol: currentCurrency }).multiply(guests.length);
-  }
-
   const guestPrices = [];
   let selectedModifier;
   let delta;
   for (let i = 0; i < guests.length; i += 1) {
+    const guestResult = {
+      guestId: guests[i].id,
+      ratePlanId: ratePlan.id,
+      currency: currentCurrency,
+      basePrice: currencyjs(ratePlan.price, { symbol: currentCurrency }),
+    };
     delta = 0;
+
     // Pick the best modifier for each guest and adjust the price
     selectedModifier = selectBestGuestModifier(ratePlan.price, applicableModifiers, guests[i].age);
     if (selectedModifier && selectedModifier.change) {
       delta = selectedModifier.change;
+      guestResult.modifier = selectedModifier;
     }
-    guestPrices.push(ratePlan.price + delta);
+    guestResult.resultingPrice = guestResult.basePrice.add(currencyjs(delta, { symbol: currentCurrency }));
+    guestPrices.push(guestResult);
   }
-  return guestPrices.reduce((a, b) => a.add(currencyjs(b, { symbol: currentCurrency })), currencyjs(0, { symbol: currentCurrency }));
+  return guestPrices;
 };
 
 /**
@@ -107,11 +112,16 @@ export const computeDailyRatePlans = (arrivalDateDayjs, departureDateDayjs, gues
 
       // Count only rate plan ending sometimes during the stay
       if (currentDate >= availableForTravelFrom && currentDate <= availableForTravelTo) {
+        // TODO allow for day-guest-rate plan combinations
+        const dailyPrice = computeDailyPrice(
+          guests, lengthOfStay, currentDate, currentRatePlan, currentCurrency,
+        );
         dailyPrices[currentCurrency][i].push({
+          date: currentDate,
           ratePlan: currentRatePlan,
-          dailyPrice: computeDailyPrice(
-            guests, lengthOfStay, currentDate, currentRatePlan, currentCurrency,
-          ),
+          total: dailyPrice
+            .reduce((a, b) => a.add(currencyjs(b.resultingPrice, { symbol: currentCurrency })), currencyjs(0, { symbol: currentCurrency })),
+          guestPrices: dailyPrice,
         });
       }
     }
@@ -169,7 +179,7 @@ export class PriceComputer {
     const departureDateDayjs = dayjs(departureDate);
     const lengthOfStay = Math.abs(arrivalDateDayjs.diff(departureDateDayjs, 'days'));
     const roomTypes = roomTypeId ? this.roomTypes.filter((rt) => rt.id === roomTypeId) : this.roomTypes;
-    
+
     return roomTypes.map((roomType) => {
       const applicableRatePlans = selectApplicableRatePlans(
         roomType.id, this.ratePlans, bookingDateDayjs, arrivalDateDayjs, departureDateDayjs, this.defaultCurrency, currency
@@ -179,13 +189,14 @@ export class PriceComputer {
         return {
           id: roomType.id,
           prices: [],
+          rawDailyPrices: [],
         };
       }
 
       const dailyPrices = computeDailyRatePlans(arrivalDateDayjs, departureDateDayjs, guests, this.defaultCurrency, applicableRatePlans);
       return {
         id: roomType.id,
-        prices: ratePlansStrategy(dailyPrices, lengthOfStay),
+        ...ratePlansStrategy(dailyPrices, lengthOfStay),
       };
     });
   }
@@ -211,7 +222,45 @@ export class PriceComputer {
    *       {
    *         "currency": "CZK",
    *         "total": <currencyjs instance>,
-   *         "ratePlan": <RatePlan object>
+   *         "ratePlan": <RatePlan object>,
+   *         "drilldown": [
+   *           {
+   *             "date": "2018-01-01",
+   *             "subtotal": 100,
+   *             "prices": [
+   *               {
+   *                 "guestId": "guest id 1",
+   *                 "ratePlanId": "rate plan id",
+   *                 "currency": "EUR",
+   *                 "basePrice": 100,
+   *                 "resultingPrice": 50,
+   *                 "modifier": {
+   *                   "conditions": {
+   *                     "minOccupants": 2
+   *                   },
+   *                   "unit": "percentage"
+   *                   "adjustment": -50,
+   *                   "change": -50
+   *                 }
+   *               },
+   *               {
+   *                 "guestId": "guest id 2",
+   *                 "ratePlanId": "rate plan id",
+   *                 "currency": "EUR",
+   *                 "basePrice": 100,
+   *                 "resultingPrice": 50,
+   *                 "modifier": {
+   *                   "conditions": {
+   *                     "minOccupants": 2
+   *                   },
+   *                   "unit": "percentage"
+   *                   "adjustment": -50,
+   *                   "change": -50
+   *                 }
+   *               }
+   *             ]
+   *           }
+   *         ]
    *       }
    *     ]
    *   }
@@ -235,25 +284,34 @@ export class PriceComputer {
                 dailyPrices: [],
               };
             }
-            ratePlanOccurrences[rp.ratePlan.id].dailyPrices.push(rp.dailyPrice);
+            ratePlanOccurrences[rp.ratePlan.id].dailyPrices.push(rp);
           });
         }
+
         const bestRatePlan = Object.values(ratePlanOccurrences)
           .filter((rp) => rp.dailyPrices.length === lengthOfStay)
           .map((rp) => ({
             ratePlan: rp.ratePlan,
-            total: rp.dailyPrices.reduce((total, dp) => total.add(dp), currencyjs(0, { symbol: currencies[i] })),
+            total: rp.dailyPrices.reduce((total, dp) => total.add(dp.total), currencyjs(0, { symbol: currencies[i] })),
+            drilldown: rp.dailyPrices.reduce((a, b) => {
+              return a.concat([{
+                date: b.date.format('YYYY-MM-DD'),
+                subtotal: b.total,
+                prices: b.guestPrices,
+              }]);
+            }, []),
           }))
           .sort((a, b) => a.total >= b.total ? -1 : 1)
           .pop();
 
         prices.push({
           currency: currencies[i],
-          total: bestRatePlan.total,
-          ratePlan: bestRatePlan.ratePlan,
+          ...bestRatePlan,
         });
       }
-      return prices;
+      return {
+        prices,
+      };
     });
   }
 
@@ -281,13 +339,46 @@ export class PriceComputer {
    *         "ratePlans": [
    *           {
    *             "ratePlan": <RatePlan object>,
-   *             "dailyPrices": [
-   *               <Result of computeDailyPrice>,
-   *               <Result of computeDailyPrice>,
-   *               ...
-   *             ],
-   *             "total": <currencyjs object>
-   *           }
+   *             "total": <currencyjs object>,
+   *             "drilldown": [
+   *               {
+   *                 "date": "2018-01-01",
+   *                  "subtotal": 100,
+   *                  "prices": [
+   *                    {
+   *                      "guestId": "guest id 1",
+   *                      "ratePlanId": "rate plan id",
+   *                      "currency": "EUR",
+   *                      "basePrice": 100,
+   *                      "resultingPrice": 50,
+   *                      "modifier": {
+   *                        "conditions": {
+   *                          "minOccupants": 2
+   *                        },
+   *                        "unit": "percentage"
+   *                        "adjustment": -50,
+   *                        "change": -50
+   *                      }
+   *                    },
+   *                    {
+   *                      "guestId": "guest id 2",
+   *                      "ratePlanId": "rate plan id",
+   *                      "currency": "EUR",
+   *                      "basePrice": 100,
+   *                      "resultingPrice": 50,
+   *                      "modifier": {
+   *                        "conditions": {
+   *                          "minOccupants": 2
+   *                        },
+   *                        "unit": "percentage"
+   *                        "adjustment": -50,
+   *                        "change": -50
+   *                      }
+   *                    }
+   *                  ]
+   *                }
+   *              ]
+   *            }
    *         ]
    *       }
    *     ]
@@ -312,7 +403,7 @@ export class PriceComputer {
                 dailyPrices: [],
               };
             }
-            ratePlanOccurrences[rp.ratePlan.id].dailyPrices.push(rp.dailyPrice);
+            ratePlanOccurrences[rp.ratePlan.id].dailyPrices.push(rp);
           });
         }
         prices.push({
@@ -321,12 +412,20 @@ export class PriceComputer {
             .filter((rp) => rp.dailyPrices.length === lengthOfStay)
             .map((rp) => ({
               ratePlan: rp.ratePlan,
-              dailyPrices: rp.dailyPrices,
-              total: rp.dailyPrices.reduce((total, dp) => total.add(dp), currencyjs(0, { symbol: currencies[i] })),
+              total: rp.dailyPrices.reduce((total, dp) => total.add(dp.total), currencyjs(0, { symbol: currencies[i] })),
+              drilldown: rp.dailyPrices.reduce((a, b) => {
+                return a.concat([{
+                  date: b.date.format('YYYY-MM-DD'),
+                  subtotal: b.total,
+                  prices: b.guestPrices,
+                }]);
+              }, []),
             })),
         });
       }
-      return prices;
+      return {
+        prices,
+      };
     });
   }
 
@@ -363,11 +462,87 @@ export class PriceComputer {
    *     "prices": [
    *       {
    *         "currency": "EUR",
-   *         "total": 123.12
+   *         "total": 100,
+   *         "drilldown": [
+   *           {
+   *             "date": "2018-01-01",
+   *             "subtotal": 100,
+   *             "prices": [
+   *               {
+   *                 "guestId": "guest id 1",
+   *                 "ratePlanId": "rate plan id",
+   *                 "currency": "EUR",
+   *                 "basePrice": 100,
+   *                 "resultingPrice": 50,
+   *                 "modifier": {
+   *                   "conditions": {
+   *                     "minOccupants": 2
+   *                   },
+   *                   "unit": "percentage"
+   *                   "adjustment": -50,
+   *                   "change": -50
+   *                 }
+   *               },
+   *               {
+   *                 "guestId": "guest id 2",
+   *                 "ratePlanId": "rate plan id",
+   *                 "currency": "EUR",
+   *                 "basePrice": 100,
+   *                 "resultingPrice": 50,
+   *                 "modifier": {
+   *                   "conditions": {
+   *                     "minOccupants": 2
+   *                   },
+   *                   "unit": "percentage"
+   *                   "adjustment": -50,
+   *                   "change": -50
+   *                 }
+   *               }
+   *             ]
+   *           }
+   *         ]
    *       },
    *       {
    *         "currency": "USD",
-   *         "total": 130
+   *         "total": 100,
+   *         "drilldown": [
+   *           {
+   *             "date": "2018-01-01",
+   *             "subtotal": 100,
+   *             "prices": [
+   *               {
+   *                 "guestId": "guest id 1",
+   *                 "ratePlanId": "rate plan id",
+   *                 "currency": "EUR",
+   *                 "basePrice": 100,
+   *                 "resultingPrice": 50,
+   *                 "modifier": {
+   *                   "conditions": {
+   *                     "minOccupants": 2
+   *                   },
+   *                   "unit": "percentage"
+   *                   "adjustment": -50,
+   *                   "change": -50
+   *                 }
+   *               },
+   *               {
+   *                 "guestId": "guest id 2",
+   *                 "ratePlanId": "rate plan id",
+   *                 "currency": "EUR",
+   *                 "basePrice": 100,
+   *                 "resultingPrice": 50,
+   *                 "modifier": {
+   *                   "conditions": {
+   *                     "minOccupants": 2
+   *                   },
+   *                   "unit": "percentage"
+   *                   "adjustment": -50,
+   *                   "change": -50
+   *                 }
+   *               }
+   *             ]
+   *           }
+   *         ]
    *       }
    *     ]
    *   }
@@ -378,25 +553,41 @@ export class PriceComputer {
     return this._determinePrices(bookingDate, arrivalDate, departureDate, guests, currency, roomTypeId, (dailyPrices) => {
       const prices = [];
       const currencies = Object.keys(dailyPrices);
+      // Currencies
       for (let i = 0; i < currencies.length; i += 1) {
         const currentCurrency = dailyPrices[currencies[i]];
-        const dailyBests = [];
+        const dailyBests = {};
+        // Days
         for (let j = 0; j < currentCurrency.length; j += 1) {
-          const price = currentCurrency[j]
+          const dailyBest = currentCurrency[j]
             .reduce((agg, curr) => {
-              if (!agg || agg.subtract(curr.dailyPrice) >= 0) {
-                return curr.dailyPrice;
+              if (!agg || !agg.total || agg.total.subtract(curr.total) >= 0) {
+                return curr;
               }
               return agg;
             }, undefined);
-          dailyBests.push(price);
+          dailyBests[currentCurrency[j][0].date.format('YYYY-MM-DD')] = dailyBest;
         }
         prices.push({
           currency: currencies[i],
-          total: dailyBests.reduce((a, b) => a.add(currencyjs(b, { symbol: currencies[i] })), currencyjs(0, { symbol: currencies[i] })),
+          total: Object.values(dailyBests)
+            .reduce((a, b) => {
+              return a.add(currencyjs(b.total, { symbol: currencies[i] }));
+            }, currencyjs(0, { symbol: currencies[i] })),
+          drilldown: Object.keys(dailyBests).reduce((a, b) => {
+            return a.concat([{
+              date: b,
+              subtotal: dailyBests[b].guestPrices.reduce((a, b) => {
+                return a.add(b.resultingPrice);
+              }, currencyjs(0, { symbol: currencies[i] })),
+              prices: dailyBests[b].guestPrices,
+            }]);
+          }, []),
         });
       }
-      return prices;
+      return {
+        prices,
+      };
     });
   }
 }
