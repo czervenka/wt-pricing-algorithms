@@ -17,7 +17,30 @@ import {
  * @param  {dayjs} dateDayjs
  * @param  {Object} ratePlan
  * @param  {string} currentCurrency
- * @return {currencyjs} Total amount for all of the guests
+ * @return {Array<object>} Information about possible daily prices
+ * for each guest like this (modifier being optional depending on
+ * meeting the declare conditions):
+ *
+ * ```
+ * [
+ *   {
+ *     "guestId": "guest id",
+ *     "ratePlanId": "rate plan id",
+ *     "currency": "EUR",
+ *     "basePrice": <currencyjs object>,
+ *     "resultingPrice": <currencyjs object>,
+ *     "modifier": {
+ *       "conditions": {
+ *         "minOccupants": 2
+ *       },
+ *       "unit": "percentage"
+ *       "adjustment": -50,
+ *       "change": -50
+ *     }
+ *   }
+ * ]
+ * ```
+ *
  */
 export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan, currentCurrency) => {
   const applicableModifiers = selectApplicableModifiers(
@@ -76,8 +99,10 @@ export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan, cur
  * ```
  * [
  *   {
+ *     "date": <dayjs instance>,
  *     "ratePlan": <RatePlan object>,
- *     "dailyPrice": <Result of computeDailyPrice>
+ *     "total": <currencyjs instance>,
+ *     "guestPrices": <result of computeDailyPrice>
  *   }
  * ]
  * ```

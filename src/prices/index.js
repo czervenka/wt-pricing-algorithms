@@ -2,12 +2,9 @@ import dayjs from 'dayjs';
 import currencyjs from 'currency.js';
 import {
   computeDailyRatePlans,
-  computeDailyPrice,
 } from './utils';
 
 import {
-  selectApplicableModifiers,
-  selectBestGuestModifier,
   selectApplicableRatePlans,
 } from './rate-plans';
 
@@ -75,7 +72,9 @@ export class PriceComputer {
 
   /**
    * Returns the rate plan that covers the whole stay
-   * with the best price.
+   * with the best price. If needed, a drilldown data
+   * is available that you can use to inspect all of
+   * the components adding up to the final price.
    *
    * @param  {mixed} bookingDate
    * @param  {mixed} arrivalDate
@@ -191,6 +190,8 @@ export class PriceComputer {
    *
    * Returns all of the rate plans that cover the whole stay.
    * A client can choose the most fitting one for their purpose.
+   * If needed, a drilldown data is available that you can use
+   * to inspect all of  the components adding up to the final price.
    *
    * @param  {mixed} bookingDate
    * @param  {mixed} arrivalDate
@@ -215,42 +216,42 @@ export class PriceComputer {
    *             "drilldown": [
    *               {
    *                 "date": "2018-01-01",
-   *                  "subtotal": 100,
-   *                  "prices": [
-   *                    {
-   *                      "guestId": "guest id 1",
-   *                      "ratePlanId": "rate plan id",
-   *                      "currency": "EUR",
-   *                      "basePrice": 100,
-   *                      "resultingPrice": 50,
-   *                      "modifier": {
-   *                        "conditions": {
-   *                          "minOccupants": 2
-   *                        },
-   *                        "unit": "percentage"
-   *                        "adjustment": -50,
-   *                        "change": -50
-   *                      }
-   *                    },
-   *                    {
-   *                      "guestId": "guest id 2",
-   *                      "ratePlanId": "rate plan id",
-   *                      "currency": "EUR",
-   *                      "basePrice": 100,
-   *                      "resultingPrice": 50,
-   *                      "modifier": {
-   *                        "conditions": {
-   *                          "minOccupants": 2
-   *                        },
-   *                        "unit": "percentage"
-   *                        "adjustment": -50,
-   *                        "change": -50
-   *                      }
-   *                    }
-   *                  ]
-   *                }
-   *              ]
-   *            }
+   *                 "subtotal": 100,
+   *                 "prices": [
+   *                   {
+   *                     "guestId": "guest id 1",
+   *                     "ratePlanId": "rate plan id",
+   *                     "currency": "EUR",
+   *                     "basePrice": 100,
+   *                     "resultingPrice": 50,
+   *                     "modifier": {
+   *                       "conditions": {
+   *                         "minOccupants": 2
+   *                       },
+   *                       "unit": "percentage"
+   *                       "adjustment": -50,
+   *                       "change": -50
+   *                     }
+   *                   },
+   *                   {
+   *                     "guestId": "guest id 2",
+   *                     "ratePlanId": "rate plan id",
+   *                     "currency": "EUR",
+   *                     "basePrice": 100,
+   *                     "resultingPrice": 50,
+   *                     "modifier": {
+   *                       "conditions": {
+   *                         "minOccupants": 2
+   *                       },
+   *                       "unit": "percentage"
+   *                       "adjustment": -50,
+   *                       "change": -50
+   *                     }
+   *                   }
+   *                 ]
+   *               }
+   *             ]
+   *           }
    *         ]
    *       }
    *     ]

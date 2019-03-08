@@ -14,24 +14,24 @@
     -   [Parameters][10]
 -   [computeCancellationFees][11]
     -   [Parameters][12]
--   [computeDailyPrice][13]
-    -   [Parameters][14]
--   [computeDailyRatePlans][15]
-    -   [Parameters][16]
--   [PriceComputerError][17]
--   [PriceComputer][18]
-    -   [Parameters][19]
-    -   [getBestPriceWithSingleRatePlan][20]
+-   [PriceComputerError][13]
+-   [PriceComputer][14]
+    -   [Parameters][15]
+    -   [getBestPriceWithSingleRatePlan][16]
+        -   [Parameters][17]
+    -   [getPossiblePricesWithSingleRatePlan][18]
+        -   [Parameters][19]
+    -   [getBestPrice][20]
         -   [Parameters][21]
-    -   [getPossiblePricesWithSingleRatePlan][22]
-        -   [Parameters][23]
-    -   [getBestPrice][24]
-        -   [Parameters][25]
--   [selectApplicableModifiers][26]
+-   [selectApplicableModifiers][22]
+    -   [Parameters][23]
+-   [selectBestGuestModifier][24]
+    -   [Parameters][25]
+-   [selectApplicableRatePlans][26]
     -   [Parameters][27]
--   [selectBestGuestModifier][28]
+-   [computeDailyPrice][28]
     -   [Parameters][29]
--   [selectApplicableRatePlans][30]
+-   [computeDailyRatePlans][30]
     -   [Parameters][31]
 
 ## indexAvailability
@@ -146,59 +146,6 @@ in the future.
 
 Returns **[Array][32]&lt;[Object][34]>** Result of `reduceFeeSchedule`
 
-## computeDailyPrice
-
-Determines a price for all of the guests for a single day
-by using the selected rate plan and applying appropriate
-modifier for every guest.
-
-### Parameters
-
--   `guests` **[Array][32]&lt;[Object][34]>** list of information about guests,
-    right now only the `age` field is expected
--   `lengthOfStay` **[Number][35]** 
--   `dateDayjs` **dayjs** 
--   `ratePlan` **[Object][34]** 
--   `currentCurrency` **[string][36]** 
-
-Returns **currencyjs** Total amount for all of the guests
-
-## computeDailyRatePlans
-
-Computes all daily prices for all rate plans that
-can be applied for every day of the stay and groups
-them by currency. If we are not able to cover all days
-for any given currency, the whole currency gets dropped.
-
-This allows for flexible rate plan combination strategies
-and various end-user price combinations.
-
-This does not allow a combination on a day-guest level, i. e.
-a different rate plan can not be picked for different people on the
-same day.
-
-### Parameters
-
--   `arrivalDateDayjs` **dayjs** 
--   `departureDateDayjs` **dayjs** 
--   `guests` **[Array][32]&lt;[Object][34]>** list of information about guests,
-    right now only the `age` field is expected
--   `hotelCurrency` **[string][36]** default hotel currency
--   `applicableRatePlans` **[Array][32]&lt;[object][34]>** list of possible rate plans
-
-Returns **[Object][34]** For every currency a record exists in this map. The value
-is an array of currencyjs instances that denote the best price
-for all guests for a single day.
-
-Returns **[Object][34]** Every key is a currency code and its value is
-an array (every index represents a single day). For every day
-there is a list of usable daily prices computed from a certain rate plan.    [
-      {
-        "ratePlan": <RatePlan object>,
-        "dailyPrice": <Result of computeDailyPrice>
-      }
-    ]
-
 ## PriceComputerError
 
 **Extends Error**
@@ -223,7 +170,9 @@ hotels.
 ### getBestPriceWithSingleRatePlan
 
 Returns the rate plan that covers the whole stay
-with the best price.
+with the best price. If needed, a drilldown data
+is available that you can use to inspect all of 
+the components adding up to the final price.
 
 #### Parameters
 
@@ -242,7 +191,45 @@ Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
           {
             "currency": "CZK",
             "total": <currencyjs instance>,
-            "ratePlan": <RatePlan object>
+            "ratePlan": <RatePlan object>,
+            "drilldown": [
+              {
+                "date": "2018-01-01",
+                "subtotal": 100,
+                "prices": [
+                  {
+                    "guestId": "guest id 1",
+                    "ratePlanId": "rate plan id",
+                    "currency": "EUR",
+                    "basePrice": 100,
+                    "resultingPrice": 50,
+                    "modifier": {
+                      "conditions": {
+                        "minOccupants": 2
+                      },
+                      "unit": "percentage"
+                      "adjustment": -50,
+                      "change": -50
+                    }
+                  },
+                  {
+                    "guestId": "guest id 2",
+                    "ratePlanId": "rate plan id",
+                    "currency": "EUR",
+                    "basePrice": 100,
+                    "resultingPrice": 50,
+                    "modifier": {
+                      "conditions": {
+                        "minOccupants": 2
+                      },
+                      "unit": "percentage"
+                      "adjustment": -50,
+                      "change": -50
+                    }
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -252,6 +239,8 @@ Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
 
 Returns all of the rate plans that cover the whole stay.
 A client can choose the most fitting one for their purpose.
+If needed, a drilldown data is available that you can use
+to inspect all of  the components adding up to the final price.
 
 #### Parameters
 
@@ -272,12 +261,45 @@ Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
             "ratePlans": [
               {
                 "ratePlan": <RatePlan object>,
-                "dailyPrices": [
-                  <Result of computeDailyPrice>,
-                  <Result of computeDailyPrice>,
-                  ...
-                ],
-                "total": <currencyjs object>
+                "total": <currencyjs object>,
+                "drilldown": [
+                  {
+                    "date": "2018-01-01",
+                    "subtotal": 100,
+                    "prices": [
+                      {
+                        "guestId": "guest id 1",
+                        "ratePlanId": "rate plan id",
+                        "currency": "EUR",
+                        "basePrice": 100,
+                        "resultingPrice": 50,
+                        "modifier": {
+                          "conditions": {
+                            "minOccupants": 2
+                          },
+                          "unit": "percentage"
+                          "adjustment": -50,
+                          "change": -50
+                        }
+                      },
+                      {
+                        "guestId": "guest id 2",
+                        "ratePlanId": "rate plan id",
+                        "currency": "EUR",
+                        "basePrice": 100,
+                        "resultingPrice": 50,
+                        "modifier": {
+                          "conditions": {
+                            "minOccupants": 2
+                          },
+                          "unit": "percentage"
+                          "adjustment": -50,
+                          "change": -50
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
             ]
           }
@@ -320,11 +342,87 @@ is empty.    [
         "prices": [
           {
             "currency": "EUR",
-            "total": 123.12
+            "total": 100,
+            "drilldown": [
+              {
+                "date": "2018-01-01",
+                "subtotal": 100,
+                "prices": [
+                  {
+                    "guestId": "guest id 1",
+                    "ratePlanId": "rate plan id",
+                    "currency": "EUR",
+                    "basePrice": 100,
+                    "resultingPrice": 50,
+                    "modifier": {
+                      "conditions": {
+                        "minOccupants": 2
+                      },
+                      "unit": "percentage"
+                      "adjustment": -50,
+                      "change": -50
+                    }
+                  },
+                  {
+                    "guestId": "guest id 2",
+                    "ratePlanId": "rate plan id",
+                    "currency": "EUR",
+                    "basePrice": 100,
+                    "resultingPrice": 50,
+                    "modifier": {
+                      "conditions": {
+                        "minOccupants": 2
+                      },
+                      "unit": "percentage"
+                      "adjustment": -50,
+                      "change": -50
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "currency": "USD",
-            "total": 130
+            "total": 100,
+            "drilldown": [
+              {
+                "date": "2018-01-01",
+                "subtotal": 100,
+                "prices": [
+                  {
+                    "guestId": "guest id 1",
+                    "ratePlanId": "rate plan id",
+                    "currency": "EUR",
+                    "basePrice": 100,
+                    "resultingPrice": 50,
+                    "modifier": {
+                      "conditions": {
+                        "minOccupants": 2
+                      },
+                      "unit": "percentage"
+                      "adjustment": -50,
+                      "change": -50
+                    }
+                  },
+                  {
+                    "guestId": "guest id 2",
+                    "ratePlanId": "rate plan id",
+                    "currency": "EUR",
+                    "basePrice": 100,
+                    "resultingPrice": 50,
+                    "modifier": {
+                      "conditions": {
+                        "minOccupants": 2
+                      },
+                      "unit": "percentage"
+                      "adjustment": -50,
+                      "change": -50
+                    }
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -381,6 +479,79 @@ given conditions.
 
 Returns **[Array][32]&lt;[Object][34]>** List of usable rate plans.
 
+## computeDailyPrice
+
+Determines a price for all of the guests for a single day
+by using the selected rate plan and applying appropriate
+modifier for every guest.
+
+### Parameters
+
+-   `guests` **[Array][32]&lt;[Object][34]>** list of information about guests,
+    right now only the `age` field is expected
+-   `lengthOfStay` **[Number][35]** 
+-   `dateDayjs` **dayjs** 
+-   `ratePlan` **[Object][34]** 
+-   `currentCurrency` **[string][36]** 
+
+Returns **[Array][32]&lt;[object][34]>** Information about possible daily prices
+for each guest like this (modifier being optional depending on
+meeting the declare conditions):    [
+      {
+        "guestId": "guest id",
+        "ratePlanId": "rate plan id",
+        "currency": "EUR",
+        "basePrice": <currencyjs object>,
+        "resultingPrice": <currencyjs object>,
+        "modifier": {
+          "conditions": {
+            "minOccupants": 2
+          },
+          "unit": "percentage"
+          "adjustment": -50,
+          "change": -50
+        }
+      }
+    ]
+
+## computeDailyRatePlans
+
+Computes all daily prices for all rate plans that
+can be applied for every day of the stay and groups
+them by currency. If we are not able to cover all days
+for any given currency, the whole currency gets dropped.
+
+This allows for flexible rate plan combination strategies
+and various end-user price combinations.
+
+This does not allow a combination on a day-guest level, i. e.
+a different rate plan can not be picked for different people on the
+same day.
+
+### Parameters
+
+-   `arrivalDateDayjs` **dayjs** 
+-   `departureDateDayjs` **dayjs** 
+-   `guests` **[Array][32]&lt;[Object][34]>** list of information about guests,
+    right now only the `age` field is expected
+-   `hotelCurrency` **[string][36]** default hotel currency
+-   `applicableRatePlans` **[Array][32]&lt;[object][34]>** list of possible rate plans
+
+Returns **[Object][34]** For every currency a record exists in this map. The value
+is an array of currencyjs instances that denote the best price
+for all guests for a single day.
+
+Returns **[Object][34]** Every key is a currency code and its value is
+an array (every index represents a single day). For every day
+there is a list of usable daily prices computed from a certain rate plan.    [
+      {
+        "date": <dayjs instance>,
+        "ratePlan": <RatePlan object>,
+        "total": <currencyjs instance>,
+        "guestPrices": <result of computeDailyPrice>
+      }
+    ]
+
 [1]: #indexavailability
 
 [2]: #parameters
@@ -405,41 +576,41 @@ Returns **[Array][32]&lt;[Object][34]>** List of usable rate plans.
 
 [12]: #parameters-5
 
-[13]: #computedailyprice
+[13]: #pricecomputererror
 
-[14]: #parameters-6
+[14]: #pricecomputer
 
-[15]: #computedailyrateplans
+[15]: #parameters-6
 
-[16]: #parameters-7
+[16]: #getbestpricewithsinglerateplan
 
-[17]: #pricecomputererror
+[17]: #parameters-7
 
-[18]: #pricecomputer
+[18]: #getpossiblepriceswithsinglerateplan
 
 [19]: #parameters-8
 
-[20]: #getbestpricewithsinglerateplan
+[20]: #getbestprice
 
 [21]: #parameters-9
 
-[22]: #getpossiblepriceswithsinglerateplan
+[22]: #selectapplicablemodifiers
 
 [23]: #parameters-10
 
-[24]: #getbestprice
+[24]: #selectbestguestmodifier
 
 [25]: #parameters-11
 
-[26]: #selectapplicablemodifiers
+[26]: #selectapplicablerateplans
 
 [27]: #parameters-12
 
-[28]: #selectbestguestmodifier
+[28]: #computedailyprice
 
 [29]: #parameters-13
 
-[30]: #selectapplicablerateplans
+[30]: #computedailyrateplans
 
 [31]: #parameters-14
 
