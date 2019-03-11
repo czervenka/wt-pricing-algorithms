@@ -170,8 +170,8 @@ hotels.
 ### getBestPriceWithSingleRatePlan
 
 Returns the rate plan that covers the whole stay
-with the best price. If needed, a drilldown data
-is available that you can use to inspect all of 
+with the best price. If needed, a components data
+is available that you can use to inspect all of
 the components adding up to the final price.
 
 #### Parameters
@@ -180,7 +180,7 @@ the components adding up to the final price.
 -   `arrivalDate` **mixed** 
 -   `departureDate` **mixed** 
 -   `guests` **[Array][32]&lt;[Object][34]>** list of information about guests,
-    right now only the `age` field is expected
+    right now only the `age` and `id` fields are expected
 -   `currency` **[string][36]** optional filter by currency
 -   `roomTypeId` **[string][36]** optional filter by roomTypeId
 
@@ -192,42 +192,44 @@ Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
             "currency": "CZK",
             "total": <currencyjs instance>,
             "ratePlan": <RatePlan object>,
-            "drilldown": [
-              {
-                "date": "2018-01-01",
-                "subtotal": 100,
-                "prices": [
-                  {
-                    "guestId": "guest id 1",
-                    "ratePlanId": "rate plan id",
-                    "currency": "EUR",
-                    "basePrice": 100,
-                    "resultingPrice": 50,
-                    "modifier": {
-                      "conditions": {
-                        "minOccupants": 2
-                      },
-                      "unit": "percentage"
-                      "adjustment": -50,
-                      "change": -50
+            "components": {
+              "stay": [
+                {
+                  "date": "2018-01-01",
+                  "subtotal": 100,
+                  "guests": [
+                    {
+                      "guestId": "guest id 1",
+                      "ratePlanId": "rate plan id",
+                      "currency": "EUR",
+                      "basePrice": 100,
+                      "resultingPrice": 50,
+                      "modifier": {
+                        "conditions": {
+                          "minOccupants": 2
+                        },
+                        "unit": "percentage"
+                        "adjustment": -50,
+                        "change": -50
+                      }
+                    },
+                    {
+                      "guestId": "guest id 2",
+                      "ratePlanId": "rate plan id",
+                      "currency": "EUR",
+                      "basePrice": 100,
+                      "resultingPrice": 50,
+                      "modifier": {
+                        "conditions": {
+                          "minOccupants": 2
+                        },
+                        "unit": "percentage"
+                        "adjustment": -50,
+                        "change": -50
+                      }
                     }
-                  },
-                  {
-                    "guestId": "guest id 2",
-                    "ratePlanId": "rate plan id",
-                    "currency": "EUR",
-                    "basePrice": 100,
-                    "resultingPrice": 50,
-                    "modifier": {
-                      "conditions": {
-                        "minOccupants": 2
-                      },
-                      "unit": "percentage"
-                      "adjustment": -50,
-                      "change": -50
-                    }
-                  }
-                ]
+                  ]
+                }
               }
             ]
           }
@@ -239,7 +241,7 @@ Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
 
 Returns all of the rate plans that cover the whole stay.
 A client can choose the most fitting one for their purpose.
-If needed, a drilldown data is available that you can use
+If needed, a components data is available that you can use
 to inspect all of  the components adding up to the final price.
 
 #### Parameters
@@ -248,7 +250,7 @@ to inspect all of  the components adding up to the final price.
 -   `arrivalDate` **mixed** 
 -   `departureDate` **mixed** 
 -   `guests` **[Array][32]&lt;[Object][34]>** list of information about guests,
-    right now only the `age` field is expected
+    right now only the `age` and `id` fields are expected
 -   `currency` **[string][36]** optional filter by currency
 -   `roomTypeId` **[string][36]** optional filter by roomTypeId
 
@@ -262,42 +264,44 @@ Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
               {
                 "ratePlan": <RatePlan object>,
                 "total": <currencyjs object>,
-                "drilldown": [
-                  {
-                    "date": "2018-01-01",
-                    "subtotal": 100,
-                    "prices": [
-                      {
-                        "guestId": "guest id 1",
-                        "ratePlanId": "rate plan id",
-                        "currency": "EUR",
-                        "basePrice": 100,
-                        "resultingPrice": 50,
-                        "modifier": {
-                          "conditions": {
-                            "minOccupants": 2
-                          },
-                          "unit": "percentage"
-                          "adjustment": -50,
-                          "change": -50
+                "components": {
+                  "stay": [
+                    {
+                      "date": "2018-01-01",
+                      "subtotal": 100,
+                      "guests": [
+                        {
+                          "guestId": "guest id 1",
+                          "ratePlanId": "rate plan id",
+                          "currency": "EUR",
+                          "basePrice": 100,
+                          "resultingPrice": 50,
+                          "modifier": {
+                            "conditions": {
+                              "minOccupants": 2
+                            },
+                            "unit": "percentage"
+                            "adjustment": -50,
+                            "change": -50
+                          }
+                        },
+                        {
+                          "guestId": "guest id 2",
+                          "ratePlanId": "rate plan id",
+                          "currency": "EUR",
+                          "basePrice": 100,
+                          "resultingPrice": 50,
+                          "modifier": {
+                            "conditions": {
+                              "minOccupants": 2
+                            },
+                            "unit": "percentage"
+                            "adjustment": -50,
+                            "change": -50
+                          }
                         }
-                      },
-                      {
-                        "guestId": "guest id 2",
-                        "ratePlanId": "rate plan id",
-                        "currency": "EUR",
-                        "basePrice": 100,
-                        "resultingPrice": 50,
-                        "modifier": {
-                          "conditions": {
-                            "minOccupants": 2
-                          },
-                          "unit": "percentage"
-                          "adjustment": -50,
-                          "change": -50
-                        }
-                      }
-                    ]
+                      ]
+                    }
                   }
                 ]
               }
@@ -336,18 +340,19 @@ Returns **[Array][32]** List of prices for every room type. Every item in
 the array contains an id (roomTypeId) and a list of `prices` for all
 applicable currencies such as this. The total sum is an instance
 of currencyjs. In case of no applicable rate plans, the prices array
-is empty.    [
+is empty. In the `components` field, one can find all parts that form
+the total price.    [
       {
         "id": "single-bed",
         "prices": [
           {
             "currency": "EUR",
             "total": 100,
-            "drilldown": [
+            "components": [
               {
                 "date": "2018-01-01",
                 "subtotal": 100,
-                "prices": [
+                "guests": [
                   {
                     "guestId": "guest id 1",
                     "ratePlanId": "rate plan id",
@@ -385,42 +390,44 @@ is empty.    [
           {
             "currency": "USD",
             "total": 100,
-            "drilldown": [
-              {
-                "date": "2018-01-01",
-                "subtotal": 100,
-                "prices": [
-                  {
-                    "guestId": "guest id 1",
-                    "ratePlanId": "rate plan id",
-                    "currency": "EUR",
-                    "basePrice": 100,
-                    "resultingPrice": 50,
-                    "modifier": {
-                      "conditions": {
-                        "minOccupants": 2
-                      },
-                      "unit": "percentage"
-                      "adjustment": -50,
-                      "change": -50
+            "components": {
+              "stay": [
+                {
+                  "date": "2018-01-01",
+                  "subtotal": 100,
+                  "guests": [
+                    {
+                      "guestId": "guest id 1",
+                      "ratePlanId": "rate plan id",
+                      "currency": "EUR",
+                      "basePrice": 100,
+                      "resultingPrice": 50,
+                      "modifier": {
+                        "conditions": {
+                          "minOccupants": 2
+                        },
+                        "unit": "percentage"
+                        "adjustment": -50,
+                        "change": -50
+                      }
+                    },
+                    {
+                      "guestId": "guest id 2",
+                      "ratePlanId": "rate plan id",
+                      "currency": "EUR",
+                      "basePrice": 100,
+                      "resultingPrice": 50,
+                      "modifier": {
+                        "conditions": {
+                          "minOccupants": 2
+                        },
+                        "unit": "percentage"
+                        "adjustment": -50,
+                        "change": -50
+                      }
                     }
-                  },
-                  {
-                    "guestId": "guest id 2",
-                    "ratePlanId": "rate plan id",
-                    "currency": "EUR",
-                    "basePrice": 100,
-                    "resultingPrice": 50,
-                    "modifier": {
-                      "conditions": {
-                        "minOccupants": 2
-                      },
-                      "unit": "percentage"
-                      "adjustment": -50,
-                      "change": -50
-                    }
-                  }
-                ]
+                  ]
+                }
               }
             ]
           }
@@ -488,7 +495,7 @@ modifier for every guest.
 ### Parameters
 
 -   `guests` **[Array][32]&lt;[Object][34]>** list of information about guests,
-    right now only the `age` field is expected
+    right now only the `age` and `id` fields are expected
 -   `lengthOfStay` **[Number][35]** 
 -   `dateDayjs` **dayjs** 
 -   `ratePlan` **[Object][34]** 
@@ -500,7 +507,6 @@ meeting the declare conditions):    [
       {
         "guestId": "guest id",
         "ratePlanId": "rate plan id",
-        "currency": "EUR",
         "basePrice": <currencyjs object>,
         "resultingPrice": <currencyjs object>,
         "modifier": {

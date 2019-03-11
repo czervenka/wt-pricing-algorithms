@@ -48,14 +48,12 @@ describe('prices.index', () => {
         expect(czkResult[i][0]).toHaveProperty('total');
         expect(czkResult[i][0]).toHaveProperty('date');
         expect(czkResult[i][0].guestPrices.length).toBe(1);
-        expect(czkResult[i][0].guestPrices[0]).toHaveProperty('currency', fallbackCurrency);
         expect(czkResult[i][0].guestPrices[0]).toHaveProperty('resultingPrice');
         expect(czkResult[i][0].guestPrices[0].resultingPrice.format()).toBe(currency(100).format());
         expect(czkResult[i][1].guestPrices.length).toBe(1);
         expect(czkResult[i][1]).toHaveProperty('ratePlan');
         expect(czkResult[i][1]).toHaveProperty('total');
         expect(czkResult[i][1]).toHaveProperty('date');
-        expect(czkResult[i][1].guestPrices[0]).toHaveProperty('currency', fallbackCurrency);
         expect(czkResult[i][1].guestPrices[0]).toHaveProperty('resultingPrice');
         expect(czkResult[i][1].guestPrices[0].resultingPrice.format()).toBe(currency(60).format());
       }
@@ -95,13 +93,10 @@ describe('prices.index', () => {
         expect(czkResult[i][0]).toHaveProperty('ratePlan');
         expect(czkResult[i][0]).toHaveProperty('total');
         expect(czkResult[i][0].guestPrices.length).toBe(3);
-        expect(czkResult[i][0].guestPrices[0]).toHaveProperty('currency', fallbackCurrency);
         expect(czkResult[i][0].guestPrices[0]).toHaveProperty('resultingPrice');
         expect(czkResult[i][0].guestPrices[0].resultingPrice.format()).toBe(currency(i < 5 ? 73 : 60).format());
-        expect(czkResult[i][0].guestPrices[1]).toHaveProperty('currency', fallbackCurrency);
         expect(czkResult[i][0].guestPrices[1]).toHaveProperty('resultingPrice');
         expect(czkResult[i][0].guestPrices[1].resultingPrice.format()).toBe(currency(i < 5 ? 73 : 60).format());
-        expect(czkResult[i][0].guestPrices[2]).toHaveProperty('currency', fallbackCurrency);
         expect(czkResult[i][0].guestPrices[2]).toHaveProperty('resultingPrice');
         expect(czkResult[i][0].guestPrices[2].resultingPrice.format()).toBe(currency(i < 5 ? 73 : 60).format());
       }
@@ -134,32 +129,23 @@ describe('prices.index', () => {
         expect(czkResult[i][0]).toHaveProperty('total');
         expect(czkResult[i][0].guestPrices.length).toBe(3);
         if (i < 5) {
-          expect(czkResult[i][0].guestPrices[0]).toHaveProperty('currency', fallbackCurrency);
           expect(czkResult[i][0].guestPrices[0]).toHaveProperty('resultingPrice');
           expect(czkResult[i][0].guestPrices[0].resultingPrice.format()).toBe(currency(60).format());
-          expect(czkResult[i][0].guestPrices[1]).toHaveProperty('currency', fallbackCurrency);
           expect(czkResult[i][0].guestPrices[1]).toHaveProperty('resultingPrice');
           expect(czkResult[i][0].guestPrices[1].resultingPrice.format()).toBe(currency(60).format());
-          expect(czkResult[i][0].guestPrices[2]).toHaveProperty('currency', fallbackCurrency);
           expect(czkResult[i][0].guestPrices[2]).toHaveProperty('resultingPrice');
           expect(czkResult[i][0].guestPrices[2].resultingPrice.format()).toBe(currency(60).format());
-          expect(czkResult[i][1].guestPrices[0]).toHaveProperty('currency', fallbackCurrency);
           expect(czkResult[i][1].guestPrices[0]).toHaveProperty('resultingPrice');
           expect(czkResult[i][1].guestPrices[0].resultingPrice.format()).toBe(currency(73).format());
-          expect(czkResult[i][1].guestPrices[1]).toHaveProperty('currency', fallbackCurrency);
           expect(czkResult[i][1].guestPrices[1]).toHaveProperty('resultingPrice');
           expect(czkResult[i][1].guestPrices[1].resultingPrice.format()).toBe(currency(73).format());
-          expect(czkResult[i][1].guestPrices[2]).toHaveProperty('currency', fallbackCurrency);
           expect(czkResult[i][1].guestPrices[2]).toHaveProperty('resultingPrice');
           expect(czkResult[i][1].guestPrices[2].resultingPrice.format()).toBe(currency(73).format());
         } else {
-          expect(czkResult[i][0].guestPrices[0]).toHaveProperty('currency', fallbackCurrency);
           expect(czkResult[i][0].guestPrices[0]).toHaveProperty('resultingPrice');
           expect(czkResult[i][0].guestPrices[0].resultingPrice.format()).toBe(currency(73).format());
-          expect(czkResult[i][0].guestPrices[1]).toHaveProperty('currency', fallbackCurrency);
           expect(czkResult[i][0].guestPrices[1]).toHaveProperty('resultingPrice');
           expect(czkResult[i][0].guestPrices[1].resultingPrice.format()).toBe(currency(73).format());
-          expect(czkResult[i][0].guestPrices[2]).toHaveProperty('currency', fallbackCurrency);
           expect(czkResult[i][0].guestPrices[2]).toHaveProperty('resultingPrice');
           expect(czkResult[i][0].guestPrices[2].resultingPrice.format()).toBe(currency(73).format());
         }
@@ -257,7 +243,6 @@ describe('prices.index', () => {
       expect(result.length).toBe(1);
       expect(result[0]).toHaveProperty('guestId');
       expect(result[0]).toHaveProperty('ratePlanId');
-      expect(result[0]).toHaveProperty('currency');
       expect(result[0]).toHaveProperty('basePrice');
       expect(result[0]).not.toHaveProperty('modifier');
       expect(result[0]).toHaveProperty('resultingPrice');
@@ -271,7 +256,6 @@ describe('prices.index', () => {
       for (let i = 0; i < 13; i++) {
         expect(result[i]).toHaveProperty('guestId', `g${i}`);
         expect(result[i]).toHaveProperty('ratePlanId');
-        expect(result[i]).toHaveProperty('currency');
         expect(result[i]).toHaveProperty('basePrice');
         expect(result[i]).not.toHaveProperty('modifier');
         expect(result[i]).toHaveProperty('resultingPrice');
@@ -293,7 +277,6 @@ describe('prices.index', () => {
         expect(result.length).toBe(1);
         expect(result[0]).toHaveProperty('guestId', 'g1');
         expect(result[0]).toHaveProperty('ratePlanId', 'rateplan1');
-        expect(result[0]).toHaveProperty('currency');
         expect(result[0]).toHaveProperty('basePrice');
         expect(result[0]).toHaveProperty('modifier');
         expect(result[0].modifier).toHaveProperty('conditions');
@@ -316,7 +299,6 @@ describe('prices.index', () => {
         expect(result.length).toBe(1);
         expect(result[0]).toHaveProperty('guestId', 'g1');
         expect(result[0]).toHaveProperty('ratePlanId', 'rateplan1');
-        expect(result[0]).toHaveProperty('currency');
         expect(result[0]).toHaveProperty('basePrice');
         expect(result[0]).toHaveProperty('modifier');
         expect(result[0].modifier).toHaveProperty('conditions');
@@ -341,7 +323,6 @@ describe('prices.index', () => {
         expect(result.length).toBe(1);
         expect(result[0]).toHaveProperty('guestId', 'g1');
         expect(result[0]).toHaveProperty('ratePlanId', 'rateplan1');
-        expect(result[0]).toHaveProperty('currency');
         expect(result[0]).toHaveProperty('basePrice');
         expect(result[0]).toHaveProperty('modifier');
         expect(result[0].modifier).toHaveProperty('conditions');
@@ -366,7 +347,6 @@ describe('prices.index', () => {
         expect(result.length).toBe(1);
         expect(result[0]).toHaveProperty('guestId', 'g1');
         expect(result[0]).toHaveProperty('ratePlanId', 'rateplan1');
-        expect(result[0]).toHaveProperty('currency');
         expect(result[0]).toHaveProperty('basePrice');
         expect(result[0]).toHaveProperty('modifier');
         expect(result[0].modifier).toHaveProperty('conditions');
@@ -389,7 +369,6 @@ describe('prices.index', () => {
         expect(result.length).toBe(1);
         expect(result[0]).toHaveProperty('guestId', 'g1');
         expect(result[0]).toHaveProperty('ratePlanId', 'rateplan1');
-        expect(result[0]).toHaveProperty('currency');
         expect(result[0]).toHaveProperty('basePrice');
         expect(result[0]).toHaveProperty('modifier');
         expect(result[0].modifier).toHaveProperty('conditions');
@@ -414,7 +393,6 @@ describe('prices.index', () => {
         expect(result.length).toBe(1);
         expect(result[0]).toHaveProperty('guestId', 'g1');
         expect(result[0]).toHaveProperty('ratePlanId', 'rateplan1');
-        expect(result[0]).toHaveProperty('currency');
         expect(result[0]).toHaveProperty('basePrice');
         expect(result[0]).toHaveProperty('modifier');
         expect(result[0].modifier).toHaveProperty('conditions');
@@ -439,7 +417,6 @@ describe('prices.index', () => {
         expect(result.length).toBe(1);
         expect(result[0]).toHaveProperty('guestId', 'g1');
         expect(result[0]).toHaveProperty('ratePlanId', 'rateplan1');
-        expect(result[0]).toHaveProperty('currency');
         expect(result[0]).toHaveProperty('basePrice');
         expect(result[0]).toHaveProperty('modifier');
         expect(result[0].modifier).toHaveProperty('conditions');
@@ -462,7 +439,6 @@ describe('prices.index', () => {
         expect(result.length).toBe(1);
         expect(result[0]).toHaveProperty('guestId', 'g1');
         expect(result[0]).toHaveProperty('ratePlanId', 'rateplan1');
-        expect(result[0]).toHaveProperty('currency');
         expect(result[0]).toHaveProperty('basePrice');
         expect(result[0]).toHaveProperty('modifier');
         expect(result[0].modifier).toHaveProperty('conditions');
@@ -487,7 +463,6 @@ describe('prices.index', () => {
         expect(result.length).toBe(1);
         expect(result[0]).toHaveProperty('guestId', 'g1');
         expect(result[0]).toHaveProperty('ratePlanId', 'rateplan1');
-        expect(result[0]).toHaveProperty('currency');
         expect(result[0]).toHaveProperty('basePrice');
         expect(result[0]).toHaveProperty('modifier');
         expect(result[0].modifier).toHaveProperty('conditions');

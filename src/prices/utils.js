@@ -12,7 +12,7 @@ import {
  * modifier for every guest.
  *
  * @param  {Array<Object>} guests list of information about guests,
- * right now only the `age` field is expected
+ * right now only the `age` and `id` fields are expected
  * @param  {Number} lengthOfStay
  * @param  {dayjs} dateDayjs
  * @param  {Object} ratePlan
@@ -26,7 +26,6 @@ import {
  *   {
  *     "guestId": "guest id",
  *     "ratePlanId": "rate plan id",
- *     "currency": "EUR",
  *     "basePrice": <currencyjs object>,
  *     "resultingPrice": <currencyjs object>,
  *     "modifier": {
@@ -53,7 +52,6 @@ export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan, cur
     const guestResult = {
       guestId: guests[i].id,
       ratePlanId: ratePlan.id,
-      currency: currentCurrency,
       basePrice: currencyjs(ratePlan.price, { symbol: currentCurrency }),
     };
     delta = 0;

@@ -58,7 +58,6 @@ export class PriceComputer {
         return {
           id: roomType.id,
           prices: [],
-          rawDailyPrices: [],
         };
       }
 
@@ -72,7 +71,7 @@ export class PriceComputer {
 
   /**
    * Returns the rate plan that covers the whole stay
-   * with the best price. If needed, a drilldown data
+   * with the best price. If needed, a components data
    * is available that you can use to inspect all of
    * the components adding up to the final price.
    *
@@ -80,7 +79,7 @@ export class PriceComputer {
    * @param  {mixed} arrivalDate
    * @param  {mixed} departureDate
    * @param  {Array<Object>} guests list of information about guests,
-   * right now only the `age` field is expected
+   * right now only the `age` and `id` fields are expected
    * @param  {string} currency optional filter by currency
    * @param  {string} roomTypeId optional filter by roomTypeId
    * @return {Array<Object>} List of roomTypes and their prices
@@ -94,42 +93,44 @@ export class PriceComputer {
    *         "currency": "CZK",
    *         "total": <currencyjs instance>,
    *         "ratePlan": <RatePlan object>,
-   *         "drilldown": [
-   *           {
-   *             "date": "2018-01-01",
-   *             "subtotal": 100,
-   *             "prices": [
-   *               {
-   *                 "guestId": "guest id 1",
-   *                 "ratePlanId": "rate plan id",
-   *                 "currency": "EUR",
-   *                 "basePrice": 100,
-   *                 "resultingPrice": 50,
-   *                 "modifier": {
-   *                   "conditions": {
-   *                     "minOccupants": 2
-   *                   },
-   *                   "unit": "percentage"
-   *                   "adjustment": -50,
-   *                   "change": -50
+   *         "components": {
+   *           "stay": [
+   *             {
+   *               "date": "2018-01-01",
+   *               "subtotal": 100,
+   *               "guests": [
+   *                 {
+   *                   "guestId": "guest id 1",
+   *                   "ratePlanId": "rate plan id",
+   *                   "currency": "EUR",
+   *                   "basePrice": 100,
+   *                   "resultingPrice": 50,
+   *                   "modifier": {
+   *                     "conditions": {
+   *                       "minOccupants": 2
+   *                     },
+   *                     "unit": "percentage"
+   *                     "adjustment": -50,
+   *                     "change": -50
+   *                   }
+   *                 },
+   *                 {
+   *                   "guestId": "guest id 2",
+   *                   "ratePlanId": "rate plan id",
+   *                   "currency": "EUR",
+   *                   "basePrice": 100,
+   *                   "resultingPrice": 50,
+   *                   "modifier": {
+   *                     "conditions": {
+   *                       "minOccupants": 2
+   *                     },
+   *                     "unit": "percentage"
+   *                     "adjustment": -50,
+   *                     "change": -50
+   *                   }
    *                 }
-   *               },
-   *               {
-   *                 "guestId": "guest id 2",
-   *                 "ratePlanId": "rate plan id",
-   *                 "currency": "EUR",
-   *                 "basePrice": 100,
-   *                 "resultingPrice": 50,
-   *                 "modifier": {
-   *                   "conditions": {
-   *                     "minOccupants": 2
-   *                   },
-   *                   "unit": "percentage"
-   *                   "adjustment": -50,
-   *                   "change": -50
-   *                 }
-   *               }
-   *             ]
+   *               ]
+   *             }
    *           }
    *         ]
    *       }
@@ -164,13 +165,15 @@ export class PriceComputer {
           .map((rp) => ({
             ratePlan: rp.ratePlan,
             total: rp.dailyPrices.reduce((total, dp) => total.add(dp.total), currencyjs(0, { symbol: currencies[i] })),
-            drilldown: rp.dailyPrices.reduce((a, b) => {
-              return a.concat([{
-                date: b.date.format('YYYY-MM-DD'),
-                subtotal: b.total,
-                prices: b.guestPrices,
-              }]);
-            }, []),
+            components: {
+              stay: rp.dailyPrices.reduce((a, b) => {
+                return a.concat([{
+                  date: b.date.format('YYYY-MM-DD'),
+                  subtotal: b.total,
+                  guests: b.guestPrices,
+                }]);
+              }, []),
+            },
           }))
           .sort((a, b) => a.total >= b.total ? -1 : 1)
           .pop();
@@ -190,14 +193,14 @@ export class PriceComputer {
    *
    * Returns all of the rate plans that cover the whole stay.
    * A client can choose the most fitting one for their purpose.
-   * If needed, a drilldown data is available that you can use
+   * If needed, a components data is available that you can use
    * to inspect all of  the components adding up to the final price.
    *
    * @param  {mixed} bookingDate
    * @param  {mixed} arrivalDate
    * @param  {mixed} departureDate
    * @param  {Array<Object>} guests list of information about guests,
-   * right now only the `age` field is expected
+   * right now only the `age` and `id` fields are expected
    * @param  {string} currency optional filter by currency
    * @param  {string} roomTypeId optional filter by roomTypeId
    * @return {Array<Object>} List of roomTypes and their prices
@@ -213,42 +216,44 @@ export class PriceComputer {
    *           {
    *             "ratePlan": <RatePlan object>,
    *             "total": <currencyjs object>,
-   *             "drilldown": [
-   *               {
-   *                 "date": "2018-01-01",
-   *                 "subtotal": 100,
-   *                 "prices": [
-   *                   {
-   *                     "guestId": "guest id 1",
-   *                     "ratePlanId": "rate plan id",
-   *                     "currency": "EUR",
-   *                     "basePrice": 100,
-   *                     "resultingPrice": 50,
-   *                     "modifier": {
-   *                       "conditions": {
-   *                         "minOccupants": 2
-   *                       },
-   *                       "unit": "percentage"
-   *                       "adjustment": -50,
-   *                       "change": -50
+   *             "components": {
+   *               "stay": [
+   *                 {
+   *                   "date": "2018-01-01",
+   *                   "subtotal": 100,
+   *                   "guests": [
+   *                     {
+   *                       "guestId": "guest id 1",
+   *                       "ratePlanId": "rate plan id",
+   *                       "currency": "EUR",
+   *                       "basePrice": 100,
+   *                       "resultingPrice": 50,
+   *                       "modifier": {
+   *                         "conditions": {
+   *                           "minOccupants": 2
+   *                         },
+   *                         "unit": "percentage"
+   *                         "adjustment": -50,
+   *                         "change": -50
+   *                       }
+   *                     },
+   *                     {
+   *                       "guestId": "guest id 2",
+   *                       "ratePlanId": "rate plan id",
+   *                       "currency": "EUR",
+   *                       "basePrice": 100,
+   *                       "resultingPrice": 50,
+   *                       "modifier": {
+   *                         "conditions": {
+   *                           "minOccupants": 2
+   *                         },
+   *                         "unit": "percentage"
+   *                         "adjustment": -50,
+   *                         "change": -50
+   *                       }
    *                     }
-   *                   },
-   *                   {
-   *                     "guestId": "guest id 2",
-   *                     "ratePlanId": "rate plan id",
-   *                     "currency": "EUR",
-   *                     "basePrice": 100,
-   *                     "resultingPrice": 50,
-   *                     "modifier": {
-   *                       "conditions": {
-   *                         "minOccupants": 2
-   *                       },
-   *                       "unit": "percentage"
-   *                       "adjustment": -50,
-   *                       "change": -50
-   *                     }
-   *                   }
-   *                 ]
+   *                   ]
+   *                 }
    *               }
    *             ]
    *           }
@@ -286,13 +291,15 @@ export class PriceComputer {
             .map((rp) => ({
               ratePlan: rp.ratePlan,
               total: rp.dailyPrices.reduce((total, dp) => total.add(dp.total), currencyjs(0, { symbol: currencies[i] })),
-              drilldown: rp.dailyPrices.reduce((a, b) => {
-                return a.concat([{
-                  date: b.date.format('YYYY-MM-DD'),
-                  subtotal: b.total,
-                  prices: b.guestPrices,
-                }]);
-              }, []),
+              components: {
+                stay: rp.dailyPrices.reduce((a, b) => {
+                  return a.concat([{
+                    date: b.date.format('YYYY-MM-DD'),
+                    subtotal: b.total,
+                    guests: b.guestPrices,
+                  }]);
+                }, []),
+              },
             })),
         });
       }
@@ -327,7 +334,8 @@ export class PriceComputer {
    * the array contains an id (roomTypeId) and a list of `prices` for all
    * applicable currencies such as this. The total sum is an instance
    * of currencyjs. In case of no applicable rate plans, the prices array
-   * is empty.
+   * is empty. In the `components` field, one can find all parts that form
+   * the total price.
    * ```
    * [
    *   {
@@ -336,11 +344,11 @@ export class PriceComputer {
    *       {
    *         "currency": "EUR",
    *         "total": 100,
-   *         "drilldown": [
+   *         "components": [
    *           {
    *             "date": "2018-01-01",
    *             "subtotal": 100,
-   *             "prices": [
+   *             "guests": [
    *               {
    *                 "guestId": "guest id 1",
    *                 "ratePlanId": "rate plan id",
@@ -378,42 +386,44 @@ export class PriceComputer {
    *       {
    *         "currency": "USD",
    *         "total": 100,
-   *         "drilldown": [
-   *           {
-   *             "date": "2018-01-01",
-   *             "subtotal": 100,
-   *             "prices": [
-   *               {
-   *                 "guestId": "guest id 1",
-   *                 "ratePlanId": "rate plan id",
-   *                 "currency": "EUR",
-   *                 "basePrice": 100,
-   *                 "resultingPrice": 50,
-   *                 "modifier": {
-   *                   "conditions": {
-   *                     "minOccupants": 2
-   *                   },
-   *                   "unit": "percentage"
-   *                   "adjustment": -50,
-   *                   "change": -50
+   *         "components": {
+   *           "stay": [
+   *             {
+   *               "date": "2018-01-01",
+   *               "subtotal": 100,
+   *               "guests": [
+   *                 {
+   *                   "guestId": "guest id 1",
+   *                   "ratePlanId": "rate plan id",
+   *                   "currency": "EUR",
+   *                   "basePrice": 100,
+   *                   "resultingPrice": 50,
+   *                   "modifier": {
+   *                     "conditions": {
+   *                       "minOccupants": 2
+   *                     },
+   *                     "unit": "percentage"
+   *                     "adjustment": -50,
+   *                     "change": -50
+   *                   }
+   *                 },
+   *                 {
+   *                   "guestId": "guest id 2",
+   *                   "ratePlanId": "rate plan id",
+   *                   "currency": "EUR",
+   *                   "basePrice": 100,
+   *                   "resultingPrice": 50,
+   *                   "modifier": {
+   *                     "conditions": {
+   *                       "minOccupants": 2
+   *                     },
+   *                     "unit": "percentage"
+   *                     "adjustment": -50,
+   *                     "change": -50
+   *                   }
    *                 }
-   *               },
-   *               {
-   *                 "guestId": "guest id 2",
-   *                 "ratePlanId": "rate plan id",
-   *                 "currency": "EUR",
-   *                 "basePrice": 100,
-   *                 "resultingPrice": 50,
-   *                 "modifier": {
-   *                   "conditions": {
-   *                     "minOccupants": 2
-   *                   },
-   *                   "unit": "percentage"
-   *                   "adjustment": -50,
-   *                   "change": -50
-   *                 }
-   *               }
-   *             ]
+   *               ]
+   *             }
    *           }
    *         ]
    *       }
@@ -447,15 +457,17 @@ export class PriceComputer {
             .reduce((a, b) => {
               return a.add(currencyjs(b.total, { symbol: currencies[i] }));
             }, currencyjs(0, { symbol: currencies[i] })),
-          drilldown: Object.keys(dailyBests).reduce((a, b) => {
-            return a.concat([{
-              date: b,
-              subtotal: dailyBests[b].guestPrices.reduce((a, b) => {
-                return a.add(b.resultingPrice);
-              }, currencyjs(0, { symbol: currencies[i] })),
-              prices: dailyBests[b].guestPrices,
-            }]);
-          }, []),
+          components: {
+            stay: Object.keys(dailyBests).reduce((a, b) => {
+              return a.concat([{
+                date: b,
+                subtotal: dailyBests[b].guestPrices.reduce((a, b) => {
+                  return a.add(b.resultingPrice);
+                }, currencyjs(0, { symbol: currencies[i] })),
+                guests: dailyBests[b].guestPrices,
+              }]);
+            }, []),
+          },
         });
       }
       return {
