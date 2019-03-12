@@ -33,8 +33,7 @@ import {
  *         "minOccupants": 2
  *       },
  *       "unit": "percentage"
- *       "adjustment": -50,
- *       "change": -50
+ *       "adjustment": -50
  *     }
  *   }
  * ]
@@ -60,6 +59,7 @@ export const computeDailyPrice = (guests, lengthOfStay, dateDayjs, ratePlan, cur
     selectedModifier = selectBestGuestModifier(ratePlan.price, applicableModifiers, guests[i].age);
     if (selectedModifier && selectedModifier.change) {
       delta = selectedModifier.change;
+      delete selectedModifier.change;
       guestResult.modifier = selectedModifier;
     }
     guestResult.resultingPrice = guestResult.basePrice.add(currencyjs(delta, { symbol: currentCurrency }));

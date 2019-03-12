@@ -209,8 +209,7 @@ Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
                           "minOccupants": 2
                         },
                         "unit": "percentage"
-                        "adjustment": -50,
-                        "change": -50
+                        "adjustment": -50
                       }
                     },
                     {
@@ -224,8 +223,7 @@ Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
                           "minOccupants": 2
                         },
                         "unit": "percentage"
-                        "adjustment": -50,
-                        "change": -50
+                        "adjustment": -50
                       }
                     }
                   ]
@@ -281,8 +279,7 @@ Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
                               "minOccupants": 2
                             },
                             "unit": "percentage"
-                            "adjustment": -50,
-                            "change": -50
+                            "adjustment": -50
                           }
                         },
                         {
@@ -296,8 +293,7 @@ Returns **[Array][32]&lt;[Object][34]>** List of roomTypes and their prices    [
                               "minOccupants": 2
                             },
                             "unit": "percentage"
-                            "adjustment": -50,
-                            "change": -50
+                            "adjustment": -50
                           }
                         }
                       ]
@@ -364,8 +360,7 @@ the total price.    [
                         "minOccupants": 2
                       },
                       "unit": "percentage"
-                      "adjustment": -50,
-                      "change": -50
+                      "adjustment": -50
                     }
                   },
                   {
@@ -379,8 +374,7 @@ the total price.    [
                         "minOccupants": 2
                       },
                       "unit": "percentage"
-                      "adjustment": -50,
-                      "change": -50
+                      "adjustment": -50
                     }
                   }
                 ]
@@ -407,8 +401,7 @@ the total price.    [
                           "minOccupants": 2
                         },
                         "unit": "percentage"
-                        "adjustment": -50,
-                        "change": -50
+                        "adjustment": -50
                       }
                     },
                     {
@@ -422,8 +415,7 @@ the total price.    [
                           "minOccupants": 2
                         },
                         "unit": "percentage"
-                        "adjustment": -50,
-                        "change": -50
+                        "adjustment": -50
                       }
                     }
                   ]
@@ -514,8 +506,7 @@ meeting the declare conditions):    [
             "minOccupants": 2
           },
           "unit": "percentage"
-          "adjustment": -50,
-          "change": -50
+          "adjustment": -50
         }
       }
     ]

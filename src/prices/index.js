@@ -110,8 +110,7 @@ export class PriceComputer {
    *                       "minOccupants": 2
    *                     },
    *                     "unit": "percentage"
-   *                     "adjustment": -50,
-   *                     "change": -50
+   *                     "adjustment": -50
    *                   }
    *                 },
    *                 {
@@ -125,8 +124,7 @@ export class PriceComputer {
    *                       "minOccupants": 2
    *                     },
    *                     "unit": "percentage"
-   *                     "adjustment": -50,
-   *                     "change": -50
+   *                     "adjustment": -50
    *                   }
    *                 }
    *               ]
@@ -233,8 +231,7 @@ export class PriceComputer {
    *                           "minOccupants": 2
    *                         },
    *                         "unit": "percentage"
-   *                         "adjustment": -50,
-   *                         "change": -50
+   *                         "adjustment": -50
    *                       }
    *                     },
    *                     {
@@ -248,8 +245,7 @@ export class PriceComputer {
    *                           "minOccupants": 2
    *                         },
    *                         "unit": "percentage"
-   *                         "adjustment": -50,
-   *                         "change": -50
+   *                         "adjustment": -50
    *                       }
    *                     }
    *                   ]
@@ -360,8 +356,7 @@ export class PriceComputer {
    *                     "minOccupants": 2
    *                   },
    *                   "unit": "percentage"
-   *                   "adjustment": -50,
-   *                   "change": -50
+   *                   "adjustment": -50
    *                 }
    *               },
    *               {
@@ -375,8 +370,7 @@ export class PriceComputer {
    *                     "minOccupants": 2
    *                   },
    *                   "unit": "percentage"
-   *                   "adjustment": -50,
-   *                   "change": -50
+   *                   "adjustment": -50
    *                 }
    *               }
    *             ]
@@ -403,8 +397,7 @@ export class PriceComputer {
    *                       "minOccupants": 2
    *                     },
    *                     "unit": "percentage"
-   *                     "adjustment": -50,
-   *                     "change": -50
+   *                     "adjustment": -50
    *                   }
    *                 },
    *                 {
@@ -418,8 +411,7 @@ export class PriceComputer {
    *                       "minOccupants": 2
    *                     },
    *                     "unit": "percentage"
-   *                     "adjustment": -50,
-   *                     "change": -50
+   *                     "adjustment": -50
    *                   }
    *                 }
    *               ]

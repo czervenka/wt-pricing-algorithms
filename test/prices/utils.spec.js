@@ -282,7 +282,7 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'percentage');
         expect(result[0].modifier).toHaveProperty('adjustment', 25);
-        expect(result[0].modifier).toHaveProperty('change', 2);
+        expect(result[0].modifier).not.toHaveProperty('change');
         expect(result[0].basePrice.format()).toBe(currency(8).format());
         expect(result[0].resultingPrice.format()).toBe(currency(10).format());
       });
@@ -304,7 +304,6 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'percentage');
         expect(result[0].modifier).toHaveProperty('adjustment', -50);
-        expect(result[0].modifier).toHaveProperty('change', -4);
         expect(result[0].basePrice.format()).toBe(currency(8).format());
         expect(result[0].resultingPrice.format()).toBe(currency(4).format());
       });
@@ -328,7 +327,6 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'percentage');
         expect(result[0].modifier).toHaveProperty('adjustment', -25);
-        expect(result[0].modifier).toHaveProperty('change', -2);
         expect(result[0].basePrice.format()).toBe(currency(8).format());
         expect(result[0].resultingPrice.format()).toBe(currency(6).format());
       });
@@ -352,7 +350,6 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'absolute');
         expect(result[0].modifier).toHaveProperty('adjustment', 25);
-        expect(result[0].modifier).toHaveProperty('change', 25);
         expect(result[0].basePrice.format()).toBe(currency(8).format());
         expect(result[0].resultingPrice.format()).toBe(currency(33).format());
       });
@@ -374,7 +371,6 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'absolute');
         expect(result[0].modifier).toHaveProperty('adjustment', -50);
-        expect(result[0].modifier).toHaveProperty('change', -50);
         expect(result[0].basePrice.format()).toBe(currency(8).format());
         expect(result[0].resultingPrice.format()).toBe(currency(-42).format());
       });
@@ -398,7 +394,6 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'absolute');
         expect(result[0].modifier).toHaveProperty('adjustment', -25);
-        expect(result[0].modifier).toHaveProperty('change', -25);
         expect(result[0].basePrice.format()).toBe(currency(8).format());
         expect(result[0].resultingPrice.format()).toBe(currency(-17).format());
       });
@@ -422,7 +417,6 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'absolute');
         expect(result[0].modifier).toHaveProperty('adjustment', 1);
-        expect(result[0].modifier).toHaveProperty('change', 1);
         expect(result[0].basePrice.format()).toBe(currency(8).format());
         expect(result[0].resultingPrice.format()).toBe(currency(9).format());
       });
@@ -444,7 +438,6 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'percentage');
         expect(result[0].modifier).toHaveProperty('adjustment', -25);
-        expect(result[0].modifier).toHaveProperty('change', -2);
         expect(result[0].basePrice.format()).toBe(currency(8).format());
         expect(result[0].resultingPrice.format()).toBe(currency(6).format());
       });
@@ -468,7 +461,6 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'percentage');
         expect(result[0].modifier).toHaveProperty('adjustment', -25);
-        expect(result[0].modifier).toHaveProperty('change', -2);
         expect(result[0].basePrice.format()).toBe(currency(8).format());
         expect(result[0].resultingPrice.format()).toBe(currency(6).format());
       });
@@ -490,7 +482,6 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'percentage');
         expect(result[0].modifier).toHaveProperty('adjustment', -75);
-        expect(result[0].modifier).toHaveProperty('change', -6);
         expect(result[0].basePrice.format()).toBe(currency(8).format());
         expect(result[0].resultingPrice.format()).toBe(currency(2).format());
         expect(result[1]).toHaveProperty('guestId', 'g2');
@@ -498,7 +489,6 @@ describe('prices.index', () => {
         expect(result[1].modifier).toHaveProperty('conditions');
         expect(result[1].modifier).toHaveProperty('unit', 'percentage');
         expect(result[1].modifier).toHaveProperty('adjustment', -75);
-        expect(result[1].modifier).toHaveProperty('change', -6);
         expect(result[1].basePrice.format()).toBe(currency(8).format());
         expect(result[1].resultingPrice.format()).toBe(currency(2).format());
       });
@@ -519,7 +509,6 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'percentage');
         expect(result[0].modifier).toHaveProperty('adjustment', -25);
-        expect(result[0].modifier).toHaveProperty('change', -2.5);
         expect(result[0].basePrice.format()).toBe(currency(10).format());
         expect(result[0].resultingPrice.format()).toBe(currency(7.5).format());
         expect(result[1]).toHaveProperty('guestId', 'g2');
@@ -527,7 +516,6 @@ describe('prices.index', () => {
         expect(result[1].modifier).toHaveProperty('conditions');
         expect(result[1].modifier).toHaveProperty('unit', 'percentage');
         expect(result[1].modifier).toHaveProperty('adjustment', -20);
-        expect(result[1].modifier).toHaveProperty('change', -2);
         expect(result[1].basePrice.format()).toBe(currency(10).format());
         expect(result[1].resultingPrice.format()).toBe(currency(8).format());
       });
@@ -552,7 +540,6 @@ describe('prices.index', () => {
         expect(result[1].modifier).toHaveProperty('conditions');
         expect(result[1].modifier).toHaveProperty('unit', 'percentage');
         expect(result[1].modifier).toHaveProperty('adjustment', -20);
-        expect(result[1].modifier).toHaveProperty('change', -2);
         expect(result[1].basePrice.format()).toBe(currency(10).format());
         expect(result[1].resultingPrice.format()).toBe(currency(8).format());
       });
@@ -577,7 +564,6 @@ describe('prices.index', () => {
         expect(result[1].modifier).toHaveProperty('conditions');
         expect(result[1].modifier).toHaveProperty('unit', 'percentage');
         expect(result[1].modifier).toHaveProperty('adjustment', -25);
-        expect(result[1].modifier).toHaveProperty('change', -2.5);
         expect(result[1].basePrice.format()).toBe(currency(10).format());
         expect(result[1].resultingPrice.format()).toBe(currency(7.5).format());
       });
@@ -604,7 +590,6 @@ describe('prices.index', () => {
         expect(result[1].modifier).toHaveProperty('conditions');
         expect(result[1].modifier).toHaveProperty('unit', 'percentage');
         expect(result[1].modifier).toHaveProperty('adjustment', -30);
-        expect(result[1].modifier).toHaveProperty('change', -3);
         expect(result[1].basePrice.format()).toBe(currency(10).format());
         expect(result[1].resultingPrice.format()).toBe(currency(7).format());
       });
@@ -626,7 +611,6 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'percentage');
         expect(result[0].modifier).toHaveProperty('adjustment', -25);
-        expect(result[0].modifier).toHaveProperty('change', -2);
         expect(result[0].basePrice.format()).toBe(currency(8).format());
         expect(result[0].resultingPrice.format()).toBe(currency(6).format());
         expect(result[1]).toHaveProperty('guestId', 'g2');
@@ -634,7 +618,6 @@ describe('prices.index', () => {
         expect(result[1].modifier).toHaveProperty('conditions');
         expect(result[1].modifier).toHaveProperty('unit', 'percentage');
         expect(result[1].modifier).toHaveProperty('adjustment', -25);
-        expect(result[1].modifier).toHaveProperty('change', -2);
         expect(result[1].basePrice.format()).toBe(currency(8).format());
         expect(result[1].resultingPrice.format()).toBe(currency(6).format());
         expect(result[2]).toHaveProperty('guestId', 'g3');
@@ -660,7 +643,6 @@ describe('prices.index', () => {
         expect(result[0].modifier).toHaveProperty('conditions');
         expect(result[0].modifier).toHaveProperty('unit', 'percentage');
         expect(result[0].modifier).toHaveProperty('adjustment', -10);
-        expect(result[0].modifier).toHaveProperty('change', -0.8);
         expect(result[0].basePrice.format()).toBe(currency(8).format());
         expect(result[0].resultingPrice.format()).toBe(currency(7.2).format());
         expect(result[1]).toHaveProperty('guestId', 'g2');
@@ -668,7 +650,6 @@ describe('prices.index', () => {
         expect(result[1].modifier).toHaveProperty('conditions');
         expect(result[1].modifier).toHaveProperty('unit', 'percentage');
         expect(result[1].modifier).toHaveProperty('adjustment', -50);
-        expect(result[1].modifier).toHaveProperty('change', -4);
         expect(result[1].basePrice.format()).toBe(currency(8).format());
         expect(result[1].resultingPrice.format()).toBe(currency(4).format());
         expect(result[2]).toHaveProperty('guestId', 'g3');
@@ -676,7 +657,6 @@ describe('prices.index', () => {
         expect(result[2].modifier).toHaveProperty('conditions');
         expect(result[2].modifier).toHaveProperty('unit', 'percentage');
         expect(result[2].modifier).toHaveProperty('adjustment', -50);
-        expect(result[2].modifier).toHaveProperty('change', -4);
         expect(result[2].basePrice.format()).toBe(currency(8).format());
         expect(result[2].resultingPrice.format()).toBe(currency(4).format());
       });

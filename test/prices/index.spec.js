@@ -199,7 +199,6 @@ describe('prices.index', () => {
         expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('basePrice');
         expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('modifier');
         expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('adjustment', -50);
-        expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('change', -30);
         expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('unit', 'percentage');
         expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('conditions');
         expect(rtbResult.prices[0].components.stay[0].guests[0].modifier.conditions).toHaveProperty('maxAge', 20);
@@ -284,7 +283,6 @@ describe('prices.index', () => {
         expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0]).toHaveProperty('basePrice');
         expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0]).toHaveProperty('modifier');
         expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0].modifier).toHaveProperty('adjustment', -50);
-        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0].modifier).toHaveProperty('change', -30);
         expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0].modifier).toHaveProperty('unit', 'percentage');
         expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0].modifier).toHaveProperty('conditions');
         expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0].modifier.conditions).toHaveProperty('maxAge', 20);
@@ -350,7 +348,6 @@ describe('prices.index', () => {
         expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('basePrice');
         expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('modifier');
         expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('adjustment', -50);
-        expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('change', -30);
         expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('unit', 'percentage');
         expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('conditions');
         expect(rtbResult.prices[0].components.stay[0].guests[0].modifier.conditions).toHaveProperty('maxAge', 20);
