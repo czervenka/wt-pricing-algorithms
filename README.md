@@ -23,6 +23,7 @@ const pc = new window.wtPricingAlgorithms.prices.PriceComputer(
   hotelDataFromApi.ratePlans,
   hotelDataFromApi.currency
 );
+// You can use different pricing strategies, see the generated documentation for that
 resultingPrice = pc.getBestPrice(
   new Date(), // Booking date
   arrival,

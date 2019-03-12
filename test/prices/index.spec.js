@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import currency from 'currency.js';
-import { PriceComputer, computeDailyPrice } from '../../src/prices';
+import { PriceComputer } from '../../src/prices';
 
 describe('prices.index', () => {
   let guests;
@@ -11,7 +11,7 @@ describe('prices.index', () => {
   let roomTypes;
 
   beforeEach(() => {
-    guests = [{ age: 18 }];
+    guests = [{ id: 'g1', age: 18 }];
     arrivalDateDayjs = dayjs('2018-01-03');
     departureDateDayjs = dayjs('2018-01-05');
     fallbackCurrency = 'CZK';
@@ -66,21 +66,27 @@ describe('prices.index', () => {
       });
     });
 
-    // TODO rewrite tests to actually use _determinePrices
     describe('_determinePrices', () => {
       it('should return null price if no rate plan matches the room type', () => {
-        const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests);
-        expect(result.find(e => e.id === 'rta')).toHaveProperty('prices', []);
+        computer._determinePrices(new Date(), '2018-01-03', '2018-01-05', guests, fallbackCurrency, 'rta', (dailyPrices, lengthOfStay) => {
+          throw new ('should have never been called')();
+        });
       });
 
       it('should return a single price if a rate plan matches the room type', () => {
-        const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests);
-        const rtb = result.find(e => e.id === 'rtb');
-        expect(rtb).toHaveProperty('prices');
-        expect(rtb.prices.length).toBe(1);
-        expect(rtb.prices[0].currency).toBe('CZK');
-        expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'CZK');
-        expect(rtb.prices[0].total.format()).toBe(currency(200).format());
+        computer._determinePrices(new Date(), '2018-01-03', '2018-01-05', guests, fallbackCurrency, 'rtb',
+          (dailyPrices, lengthOfStay) => {
+            expect(dailyPrices).toHaveProperty(fallbackCurrency);
+            expect(dailyPrices[fallbackCurrency].length).toBe(2);
+            expect(dailyPrices[fallbackCurrency][0][0]).toHaveProperty('ratePlan');
+            expect(dailyPrices[fallbackCurrency][0][0].total.format()).toBe(currency(100).format());
+            expect(dailyPrices[fallbackCurrency][0][0]).toHaveProperty('guestPrices');
+            expect(dailyPrices[fallbackCurrency][0][0].guestPrices.length).toBe(1);
+            expect(dailyPrices[fallbackCurrency][1][0]).toHaveProperty('ratePlan');
+            expect(dailyPrices[fallbackCurrency][1][0].total.format()).toBe(currency(100).format());
+            expect(dailyPrices[fallbackCurrency][1][0]).toHaveProperty('guestPrices');
+            expect(dailyPrices[fallbackCurrency][1][0].guestPrices.length).toBe(1);
+          });
       });
 
       it('should return prices in multiple currencies', () => {
@@ -98,17 +104,12 @@ describe('prices.index', () => {
             to: '2020-12-31',
           },
         });
-        const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests);
-        expect(result.length).toBe(2);
-        const rtb = result.find(e => e.id === 'rtb');
-        expect(rtb).toHaveProperty('prices');
-        expect(rtb.prices.length).toBe(2);
-        expect(rtb.prices[0].currency).toBe('CZK');
-        expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'CZK');
-        expect(rtb.prices[0].total.format()).toBe(currency(200).format());
-        expect(rtb.prices[1].currency).toBe('EUR');
-        expect(rtb.prices[1].total).toHaveProperty('s.symbol', 'EUR');
-        expect(rtb.prices[1].total.format()).toBe(currency(66).format());
+        computer._determinePrices(new Date(), '2018-01-03', '2018-01-05', guests, null, 'rtb', (dailyPrices) => {
+          expect(dailyPrices).toHaveProperty('CZK');
+          expect(dailyPrices).toHaveProperty('EUR');
+          expect(dailyPrices.CZK[0][0].total.format()).toBe(currency(100).format());
+          expect(dailyPrices.EUR[0][0].total.format()).toBe(currency(33).format());
+        });
       });
 
       it('should return a price in a single currency if requested', () => {
@@ -126,14 +127,10 @@ describe('prices.index', () => {
             to: '2020-12-31',
           },
         });
-        const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests, 'EUR');
-        expect(result.length).toBe(2);
-        const rtb = result.find(e => e.id === 'rtb');
-        expect(rtb).toHaveProperty('prices');
-        expect(rtb.prices.length).toBe(1);
-        expect(rtb.prices[0].currency).toBe('EUR');
-        expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'EUR');
-        expect(rtb.prices[0].total.format()).toBe(currency(66).format());
+        computer._determinePrices(new Date(), '2018-01-03', '2018-01-05', guests, 'EUR', 'rtb', (dailyPrices) => {
+          expect(dailyPrices).not.toHaveProperty('CZK');
+          expect(dailyPrices).toHaveProperty('EUR');
+        });
       });
 
       it('should return a price for a single room type if requested', () => {
@@ -151,42 +148,8 @@ describe('prices.index', () => {
             to: '2020-12-31',
           },
         });
-        const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests, null, 'rtb');
+        const result = computer._determinePrices(new Date(), '2018-01-03', '2018-01-05', guests, null, 'rtb', () => {});
         expect(result.length).toBe(1);
-        const rtb = result.find(e => e.id === 'rtb');
-        expect(rtb).toHaveProperty('prices');
-        expect(rtb.prices.length).toBe(2);
-        expect(rtb.prices[0].currency).toBe('CZK');
-        expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'CZK');
-        expect(rtb.prices[0].total.format()).toBe(currency(200).format());
-        expect(rtb.prices[1].currency).toBe('EUR');
-        expect(rtb.prices[1].total).toHaveProperty('s.symbol', 'EUR');
-        expect(rtb.prices[1].total.format()).toBe(currency(66).format());
-      });
-      
-      it('should return a price for a single room type and currency if requested', () => {
-        ratePlans.push({
-          id: 'rpa-eur',
-          currency: 'EUR',
-          price: 33,
-          roomTypeIds: ['rtb'],
-          availableForReservation: {
-            from: '2018-01-01',
-            to: '2020-12-31',
-          },
-          availableForTravel: {
-            from: '2016-06-01',
-            to: '2020-12-31',
-          },
-        });
-        const result = computer.getBestPrice(new Date(), '2018-01-03', '2018-01-05', guests, 'CZK', 'rtb');
-        expect(result.length).toBe(1);
-        const rtb = result.find(e => e.id === 'rtb');
-        expect(rtb).toHaveProperty('prices');
-        expect(rtb.prices.length).toBe(1);
-        expect(rtb.prices[0].currency).toBe('CZK');
-        expect(rtb.prices[0].total).toHaveProperty('s.symbol', 'CZK');
-        expect(rtb.prices[0].total.format()).toBe(currency(200).format());
       });
     });
 
@@ -204,175 +167,51 @@ describe('prices.index', () => {
             from: '2016-06-01',
             to: '2020-09-30',
           },
+          modifiers: [
+            { adjustment: -50,
+              unit: 'percentage',
+              conditions: {
+                maxAge: 20,
+              } },
+          ],
         };
-        const result = computer.getBestPrice(new Date(), arrivalDateDayjs, departureDateDayjs, guests, fallbackCurrency, 'rtb');
+        const result = computer.getBestPrice(new Date(), arrivalDateDayjs, departureDateDayjs, [
+          { id: 'g1', age: 18 },
+          { id: 'g2', age: 21 },
+        ], fallbackCurrency, 'rtb');
         const rtbResult = result.find((r) => r.id === 'rtb');
         expect(rtbResult).toHaveProperty('prices');
         expect(rtbResult.prices.length).toBe(1);
         expect(rtbResult.prices[0]).toHaveProperty('currency', fallbackCurrency);
         expect(rtbResult.prices[0]).toHaveProperty('total');
-        expect(rtbResult.prices[0].total.format()).toBe(currency(60 + 60).format());
-      });
-
-      // TODO move to computeDailyRatePlans
-      it('should return the lowest price if no modifiers are present and multiple rate plans fit (one without availableForTravel)', () => {
-        computer.ratePlans[1] = {
-          id: 'rpb',
-          price: 60,
-          roomTypeIds: ['rtb'],
-        };
-        const result = computer.getBestPrice(new Date(), arrivalDateDayjs, departureDateDayjs, guests, fallbackCurrency);
-        const rtbResult = result.find((r) => r.id === 'rtb');
-        expect(rtbResult).toHaveProperty('prices');
-        expect(rtbResult.prices.length).toBe(1);
-        expect(rtbResult.prices[0]).toHaveProperty('currency', fallbackCurrency);
-        expect(rtbResult.prices[0]).toHaveProperty('total');
-        expect(rtbResult.prices[0].total.format()).toBe(currency(60 + 60).format());
-      });
-
-      it('should combine multiple rate plans if the stay range hits both of them', () => {
-        computer.ratePlans[0] = Object.assign(
-          {},
-          computer.ratePlans[0], {
-            price: 73,
-            availableForTravel: {
-              from: '2018-10-02',
-              to: '2018-10-06',
-            },
-          },
-        );
-        computer.ratePlans[1] = {
-          id: 'rpb',
-          price: 60,
-          roomTypeIds: ['rtb'],
-          availableForReservation: {
-            from: '2018-01-01',
-            to: '2020-12-31',
-          },
-          availableForTravel: {
-            from: '2018-10-07',
-            to: '2018-10-10',
-          },
-        };
-        const result = computer.getBestPrice('2018-09-01', '2018-10-02', '2018-10-10', [{ age: 10 }, { age: 20 }, { age: 30 }], fallbackCurrency, 'rtb');
-        const rtbResult = result.find((r) => r.id === 'rtb');
-        expect(rtbResult).toHaveProperty('prices');
-        expect(rtbResult.prices.length).toBe(1);
-        expect(rtbResult.prices[0]).toHaveProperty('currency', fallbackCurrency);
-        expect(rtbResult.prices[0]).toHaveProperty('total');
-        expect(rtbResult.prices[0].total.format()).toBe(currency((5 * 3 * 73) + (3 * 3 * 60)).format());
-        expect(rtbResult.prices[0].total).toHaveProperty('s.symbol', fallbackCurrency);
-      });
-
-      it('should combine multiple rate plans if the stay range hits both of them (one without availableForTravel)', () => {
-        computer.ratePlans[0] = Object.assign(
-          {},
-          computer.ratePlans[0], {
-            price: 60,
-            availableForTravel: {
-              from: '2018-10-02',
-              to: '2018-10-06',
-            },
-          },
-        );
-        computer.ratePlans[1] = {
-          id: 'rpb',
-          price: 73,
-          roomTypeIds: ['rtb'],
-        };
-
-        const result = computer.getBestPrice(new Date(), '2018-10-02', '2018-10-10', [{ age: 10 }, { age: 20 }, { age: 30 }], fallbackCurrency, 'rtb');
-        const rtbResult = result.find((r) => r.id === 'rtb');
-        expect(rtbResult).toHaveProperty('prices');
-        expect(rtbResult.prices.length).toBe(1);
-        expect(rtbResult.prices[0]).toHaveProperty('currency', fallbackCurrency);
-        expect(rtbResult.prices[0]).toHaveProperty('total');
-        expect(rtbResult.prices[0].total.format()).toBe(currency((5 * 3 * 60) + (3 * 3 * 73)).format());
-        expect(rtbResult.prices[0].total).toHaveProperty('s.symbol', fallbackCurrency);
-      });
-
-      // TODO move to computeDailyRatePlans
-      it('should not return an estimate if even a single date of a stay is not covered by a valid rate plan', () => {
-        computer.ratePlans[0] = Object.assign(
-          {},
-          computer.ratePlans[0], {
-            price: 73,
-            availableForTravel: {
-              from: '2018-10-02',
-              to: '2018-10-04',
-            },
-          },
-        );
-        computer.ratePlans[1] = {
-          id: 'rpb',
-          price: 60,
-          roomTypeIds: ['rtb'],
-          availableForReservation: {
-            from: '2018-01-01',
-            to: '2020-12-31',
-          },
-          availableForTravel: {
-            from: '2018-10-07',
-            to: '2018-10-10',
-          },
-        };
-
-        const result = computer.getBestPrice('2018-09-01', '2018-10-02', '2018-10-10', guests, fallbackCurrency, 'rtb');
-        const rtbResult = result.find((r) => r.id === 'rtb');
-        expect(rtbResult).toHaveProperty('prices');
-        expect(rtbResult.prices.length).toBe(0);
-      });
-
-      // TODO move to computeDailyRatePlans
-      it('should not combine rate plans with different currencies', () => {
-        computer.ratePlans[0] = Object.assign(
-          {},
-          computer.ratePlans[0], {
-            price: 71,
-            availableForTravel: {
-              from: '2018-10-02',
-              to: '2018-10-06',
-            },
-            currency: 'EUR',
-          },
-        );
-        computer.ratePlans[1] = {
-          id: 'rpb',
-          price: 17,
-          roomTypeIds: ['rtb'],
-          availableForReservation: {
-            from: '2018-01-01',
-            to: '2020-12-31',
-          },
-          availableForTravel: {
-            from: '2018-10-07',
-            to: '2018-10-10',
-          },
-          currency: 'GBP',
-        };
-        computer.ratePlans[2] = {
-          id: 'rpb',
-          price: 21,
-          roomTypeIds: ['rtb'],
-          availableForReservation: {
-            from: '2018-01-01',
-            to: '2020-12-31',
-          },
-          availableForTravel: {
-            from: '2018-10-07',
-            to: '2018-10-10',
-          },
-          currency: 'EUR',
-        };
-
-        const result = computer.getBestPrice('2018-09-01', '2018-10-02', '2018-10-10', guests);
-        const rtbResult = result.find((r) => r.id === 'rtb');
-        expect(rtbResult).toHaveProperty('prices');
-        expect(rtbResult.prices.length).toBe(1);
-        expect(rtbResult.prices[0]).toHaveProperty('currency', 'EUR');
-        expect(rtbResult.prices[0]).toHaveProperty('total');
-        expect(rtbResult.prices[0].total.format()).toBe(currency((5 * 71) + (3 * 21)).format());
-        expect(rtbResult.prices[0].total).toHaveProperty('s.symbol', 'EUR');
+        expect(rtbResult.prices[0].total.format()).toBe(currency(60 + 60 + 30 + 30).format());
+        expect(rtbResult.prices[0]).toHaveProperty('components');
+        expect(rtbResult.prices[0].components).toHaveProperty('stay');
+        expect(rtbResult.prices[0].components.stay.length).toBe(2); // 2 days
+        expect(rtbResult.prices[0].components.stay[0]).toHaveProperty('date', '2018-01-03');
+        expect(rtbResult.prices[0].components.stay[0]).toHaveProperty('subtotal');
+        expect(rtbResult.prices[0].components.stay[0].subtotal.format()).toBe(currency(60 + 30).format());
+        expect(rtbResult.prices[0].components.stay[1]).toHaveProperty('date', '2018-01-04');
+        expect(rtbResult.prices[0].components.stay[1].subtotal.format()).toBe(currency(60 + 30).format());
+        expect(rtbResult.prices[0].components.stay[0].guests.length).toBe(2); // 2 people
+        expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('guestId', 'g1');
+        expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('ratePlanId', 'rpb');
+        expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('basePrice');
+        expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('modifier');
+        expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('adjustment', -50);
+        expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('unit', 'percentage');
+        expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('conditions');
+        expect(rtbResult.prices[0].components.stay[0].guests[0].modifier.conditions).toHaveProperty('maxAge', 20);
+        expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('resultingPrice');
+        expect(rtbResult.prices[0].components.stay[0].guests[0].basePrice.format()).toBe(currency(60).format());
+        expect(rtbResult.prices[0].components.stay[0].guests[0].resultingPrice.format()).toBe(currency(30).format());
+        expect(rtbResult.prices[0].components.stay[0].guests[1]).toHaveProperty('guestId', 'g2');
+        expect(rtbResult.prices[0].components.stay[0].guests[1]).toHaveProperty('ratePlanId', 'rpb');
+        expect(rtbResult.prices[0].components.stay[0].guests[1]).toHaveProperty('basePrice');
+        expect(rtbResult.prices[0].components.stay[0].guests[1]).not.toHaveProperty('modifier');
+        expect(rtbResult.prices[0].components.stay[0].guests[1]).toHaveProperty('resultingPrice');
+        expect(rtbResult.prices[0].components.stay[0].guests[1].basePrice.format()).toBe(currency(60).format());
+        expect(rtbResult.prices[0].components.stay[0].guests[1].resultingPrice.format()).toBe(currency(60).format());
       });
     });
 
@@ -390,56 +229,73 @@ describe('prices.index', () => {
             from: '2016-06-01',
             to: '2020-09-30',
           },
+          modifiers: [
+            { adjustment: -50,
+              unit: 'percentage',
+              conditions: {
+                maxAge: 20,
+              } },
+          ],
         };
-        const result = computer.getPossiblePricesWithSingleRatePlan(new Date(), arrivalDateDayjs, departureDateDayjs, guests, fallbackCurrency, 'rtb');
+        const result = computer.getPossiblePricesWithSingleRatePlan(new Date(), arrivalDateDayjs, departureDateDayjs, [
+          { id: 'g1', age: 18 },
+          { id: 'g2', age: 21 },
+        ], fallbackCurrency, 'rtb');
         const rtbResult = result.find((r) => r.id === 'rtb');
         expect(rtbResult).toHaveProperty('prices');
         expect(rtbResult.prices.length).toBe(1);
         expect(rtbResult.prices[0]).toHaveProperty('currency', fallbackCurrency);
         expect(rtbResult.prices[0]).toHaveProperty('ratePlans');
         expect(rtbResult.prices[0].ratePlans.length).toBe(2);
-        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('ratePlan.id', 'rpa');
-        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('dailyPrices', Array.from({ length: 2 }, (_, i) => currency(100, { symbol: fallbackCurrency })));
-        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('total', currency(200, { symbol: fallbackCurrency }));
-        expect(rtbResult.prices[0].ratePlans[1]).toHaveProperty('ratePlan.id', 'rpb');
-        expect(rtbResult.prices[0].ratePlans[1]).toHaveProperty('dailyPrices', Array.from({ length: 2 }, (_, i) => currency(60, { symbol: fallbackCurrency })));
-        expect(rtbResult.prices[0].ratePlans[1]).toHaveProperty('total', currency(120, { symbol: fallbackCurrency }));
-      });
-
-      it('should not return any combination of rate plans', () => {
-        computer.ratePlans[0] = Object.assign(
-          {},
-          computer.ratePlans[0], {
-            price: 73,
-            availableForTravel: {
-              from: '2018-10-02',
-              to: '2018-10-10',
-            },
-          },
-        );
-        computer.ratePlans[1] = {
-          id: 'rpb',
-          price: 60,
-          roomTypeIds: ['rtb'],
-          availableForReservation: {
-            from: '2018-01-01',
-            to: '2020-12-31',
-          },
-          availableForTravel: {
-            from: '2018-10-07',
-            to: '2018-10-10',
-          },
-        };
-        const result = computer.getPossiblePricesWithSingleRatePlan(new Date(), '2018-10-02', '2018-10-10', guests, fallbackCurrency, 'rtb');
-        const rtbResult = result.find((r) => r.id === 'rtb');
-        expect(rtbResult).toHaveProperty('prices');
-        expect(rtbResult.prices.length).toBe(1);
-        expect(rtbResult.prices[0]).toHaveProperty('currency', fallbackCurrency);
-        expect(rtbResult.prices[0]).toHaveProperty('ratePlans');
-        expect(rtbResult.prices[0].ratePlans.length).toBe(1);
-        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('ratePlan.id', 'rpa');
-        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('dailyPrices', Array.from({ length: 8 }, (_, i) => currency(73, { symbol: fallbackCurrency })));
-        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('total', currency(584, { symbol: fallbackCurrency }));
+        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('total');
+        expect(rtbResult.prices[0].ratePlans[0].total.format()).toBe(currency(100 + 100 + 100 + 100).format());
+        expect(rtbResult.prices[0].ratePlans[0]).toHaveProperty('components.stay');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay.length).toBe(2); // 2 days
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0]).toHaveProperty('date', '2018-01-03');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0]).toHaveProperty('subtotal');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].subtotal.format()).toBe(currency(100 + 100).format());
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[1]).toHaveProperty('date', '2018-01-04');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[1].subtotal.format()).toBe(currency(100 + 100).format());
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests.length).toBe(2); // 2 people
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[0]).toHaveProperty('guestId', 'g1');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[0]).toHaveProperty('ratePlanId', 'rpa');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[0]).toHaveProperty('basePrice');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[0]).not.toHaveProperty('modifier');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[0]).toHaveProperty('resultingPrice');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[0].basePrice.format()).toBe(currency(100).format());
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[0].resultingPrice.format()).toBe(currency(100).format());
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[1]).toHaveProperty('guestId', 'g2');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[1]).toHaveProperty('ratePlanId', 'rpa');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[1]).toHaveProperty('basePrice');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[1]).not.toHaveProperty('modifier');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[1]).toHaveProperty('resultingPrice');
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[1].basePrice.format()).toBe(currency(100).format());
+        expect(rtbResult.prices[0].ratePlans[0].components.stay[0].guests[1].resultingPrice.format()).toBe(currency(100).format());
+        expect(rtbResult.prices[0].ratePlans[1].components.stay.length).toBe(2); // 2 days
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0]).toHaveProperty('date', '2018-01-03');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0]).toHaveProperty('subtotal');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].subtotal.format()).toBe(currency(60 + 30).format());
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[1]).toHaveProperty('date', '2018-01-04');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[1].subtotal.format()).toBe(currency(60 + 30).format());
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests.length).toBe(2); // 2 people
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0]).toHaveProperty('guestId', 'g1');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0]).toHaveProperty('ratePlanId', 'rpb');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0]).toHaveProperty('basePrice');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0]).toHaveProperty('modifier');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0].modifier).toHaveProperty('adjustment', -50);
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0].modifier).toHaveProperty('unit', 'percentage');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0].modifier).toHaveProperty('conditions');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0].modifier.conditions).toHaveProperty('maxAge', 20);
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0]).toHaveProperty('resultingPrice');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0].basePrice.format()).toBe(currency(60).format());
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[0].resultingPrice.format()).toBe(currency(30).format());
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[1]).toHaveProperty('guestId', 'g2');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[1]).toHaveProperty('ratePlanId', 'rpb');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[1]).toHaveProperty('basePrice');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[1]).not.toHaveProperty('modifier');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[1]).toHaveProperty('resultingPrice');
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[1].basePrice.format()).toBe(currency(60).format());
+        expect(rtbResult.prices[0].ratePlans[1].components.stay[0].guests[1].resultingPrice.format()).toBe(currency(60).format());
       });
     });
 
@@ -457,205 +313,54 @@ describe('prices.index', () => {
             from: '2016-06-01',
             to: '2020-09-30',
           },
+          modifiers: [
+            { adjustment: -50,
+              unit: 'percentage',
+              conditions: {
+                maxAge: 20,
+              } },
+          ],
         };
-        const result = computer.getBestPriceWithSingleRatePlan(new Date(), arrivalDateDayjs, departureDateDayjs, guests, fallbackCurrency, 'rtb');
+
+        const result = computer.getBestPriceWithSingleRatePlan(new Date(), arrivalDateDayjs, departureDateDayjs, [
+          { id: 'g1', age: 18 },
+          { id: 'g2', age: 21 },
+        ], fallbackCurrency, 'rtb');
         const rtbResult = result.find((r) => r.id === 'rtb');
+
         expect(rtbResult).toHaveProperty('prices');
         expect(rtbResult.prices.length).toBe(1);
+        expect(rtbResult.prices[0]).toHaveProperty('ratePlan');
+        expect(rtbResult.prices[0].ratePlan).toHaveProperty('id', 'rpb');
         expect(rtbResult.prices[0]).toHaveProperty('currency', fallbackCurrency);
-        expect(rtbResult.prices[0]).toHaveProperty('total', currency(120, { symbol: fallbackCurrency }));
-        expect(rtbResult.prices[0]).toHaveProperty('ratePlan.id', 'rpb');
-      });
-    });
-  });
-
-  describe('computeDailyRatePlans', () => {
-    // This is mainly covered in various PriceComputer strategies
-    // TODO make separate tests
-  });
-
-  describe('computeDailyPrice', () => {
-    it('should return base price if rate plan has no modifiers', () => {
-      expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', { price: 10 }).format()).toBe(currency(10).format());
-      expect(computeDailyPrice((new Array(13)).map((i) => ({ age: 18 })), 3, '2018-09-12', { price: 10 }).format()).toBe(currency(130).format());
-    });
-
-    describe('percentage', () => {
-      it('should pick the most pro-customer modifier (all positive)', () => {
-        expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
-          price: 8,
-          modifiers: [
-            { adjustment: 25, unit: 'percentage', conditions: {} },
-            { adjustment: 50, unit: 'percentage', conditions: {} },
-          ],
-        }).format()).toBe(currency(10).format());
-      });
-
-      it('should pick the most pro-customer modifier (all negative)', () => {
-        expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
-          price: 8,
-          modifiers: [
-            { adjustment: -25, unit: 'percentage', conditions: {} },
-            { adjustment: -50, unit: 'percentage', conditions: {} },
-          ],
-        }).format()).toBe(currency(4).format());
-      });
-
-      it('should pick the most pro-customer modifier (mixed)', () => {
-        expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
-          price: 8,
-          modifiers: [
-            { adjustment: -25, unit: 'percentage', conditions: {} },
-            { adjustment: -10, unit: 'percentage', conditions: {} },
-            { adjustment: 13, unit: 'percentage', conditions: {} },
-            { adjustment: 50, unit: 'percentage', conditions: {} },
-          ],
-        }).format()).toBe(currency(6).format());
-      });
-    });
-
-    describe('absolute', () => {
-      it('should pick the most pro-customer modifier (all positive)', () => {
-        expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
-          price: 8,
-          modifiers: [
-            { adjustment: 25, unit: 'absolute', conditions: {} },
-            { adjustment: 50, unit: 'absolute', conditions: {} },
-          ],
-        }).format()).toBe(currency(33).format());
-      });
-
-      it('should pick the most pro-customer modifier (all negative)', () => {
-        expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
-          price: 8,
-          modifiers: [
-            { adjustment: -25, unit: 'absolute', conditions: {} },
-            { adjustment: -50, unit: 'absolute', conditions: {} },
-          ],
-        }).format()).toBe(currency(-42).format());
-      });
-
-      it('should pick the most pro-customer modifier (mixed)', () => {
-        expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
-          price: 8,
-          modifiers: [
-            { adjustment: -25, unit: 'absolute', conditions: {} },
-            { adjustment: -10, unit: 'absolute', conditions: {} },
-            { adjustment: 13, unit: 'absolute', conditions: {} },
-            { adjustment: 50, unit: 'absolute', conditions: {} },
-          ],
-        }).format()).toBe(currency(-17).format());
-      });
-    });
-
-    describe('combined', () => {
-      it('should pick the most pro-customer modifier (all positive)', () => {
-        expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
-          price: 8,
-          modifiers: [
-            { adjustment: 25, unit: 'percentage', conditions: {} },
-            { adjustment: 1, unit: 'absolute', conditions: {} },
-          ],
-        }).format()).toBe(currency(9).format());
-      });
-
-      it('should pick the most pro-customer modifier (all negative)', () => {
-        expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
-          price: 8,
-          modifiers: [
-            { adjustment: -25, unit: 'percentage', conditions: {} },
-            { adjustment: -1, unit: 'absolute', conditions: {} },
-          ],
-        }).format()).toBe(currency(6).format());
-      });
-
-      it('should pick the most pro-customer modifier (mixed)', () => {
-        expect(computeDailyPrice([{ age: 18 }], 3, '2018-09-12', {
-          price: 8,
-          modifiers: [
-            { adjustment: -25, unit: 'percentage', conditions: {} },
-            { adjustment: -10, unit: 'percentage', conditions: {} },
-            { adjustment: 1, unit: 'absolute', conditions: {} },
-            { adjustment: -1, unit: 'absolute', conditions: {} },
-          ],
-        }).format()).toBe(currency(6).format());
-      });
-    });
-
-    describe('modifier combinations', () => {
-      it('should pick the modifier with the best price if multiple are applicable', () => {
-        expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
-          price: 8,
-          modifiers: [
-            { adjustment: -75, unit: 'percentage', conditions: { minOccupants: 2 } },
-            { adjustment: -50, unit: 'percentage', conditions: { lengthOfStay: 3 } },
-          ],
-        }).format()).toBe(currency(2 * 2).format());
-      });
-
-      it('should pick the guest-specific modifier if multiple are applicable', () => {
-        expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
-          price: 10,
-          modifiers: [
-            { adjustment: -25, unit: 'percentage', conditions: { minOccupants: 2 } },
-            { adjustment: -10, unit: 'percentage', conditions: { lengthOfStay: 3 } },
-            { adjustment: -20, unit: 'percentage', conditions: { maxAge: 16 } },
-          ],
-        }).format()).toBe(currency(8 + 7.5).format());
-      });
-
-      it('combine maxAge + minOccupants', () => {
-        expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
-          price: 10,
-          modifiers: [
-            { adjustment: -20, unit: 'percentage', conditions: { minOccupants: 2, maxAge: 16 } },
-            { adjustment: -25, unit: 'percentage', conditions: { minOccupants: 3, maxAge: 16 } },
-          ],
-        }).format()).toBe(currency(10 + 8).format());
-      });
-
-      it('combine maxAge + lengthOfStay', () => {
-        expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
-          price: 10,
-          modifiers: [
-            { adjustment: -20, unit: 'percentage', conditions: { lengthOfStay: 2, maxAge: 16 } },
-            { adjustment: -25, unit: 'percentage', conditions: { lengthOfStay: 3, maxAge: 16 } },
-          ],
-        }).format()).toBe(currency(10 + 7.5).format());
-      });
-
-      it('combine maxAge + lengthOfStay + minOccupants', () => {
-        expect(computeDailyPrice([{ age: 18 }, { age: 16 }], 3, '2018-09-12', {
-          price: 10,
-          modifiers: [
-            { adjustment: -10, unit: 'percentage', conditions: { lengthOfStay: 2, minOccupants: 2, maxAge: 16 } },
-            { adjustment: -20, unit: 'percentage', conditions: { lengthOfStay: 3, minOccupants: 3, maxAge: 16 } },
-            { adjustment: -30, unit: 'percentage', conditions: { lengthOfStay: 3, minOccupants: 2, maxAge: 16 } },
-            { adjustment: -40, unit: 'percentage', conditions: { lengthOfStay: 2, minOccupants: 3, maxAge: 16 } },
-          ],
-        }).format()).toBe(currency(10 + 7).format());
-      });
-    });
-
-    describe('maxAge', () => {
-      it('should apply modifier to some of the guests if they are under or on par with the limit', () => {
-        expect(computeDailyPrice([{ age: 11 }, { age: 18 }, { age: 30 }], 3, '2018-09-12', {
-          price: 8,
-          modifiers: [
-            { adjustment: -25, unit: 'percentage', conditions: { maxAge: 18 } },
-          ],
-        }).format()).toBe(currency(8 * 1 + 6 * 2).format());
-      });
-
-      it('should apply a fitting modifier to each guests', () => {
-        expect(computeDailyPrice([{ age: 25 }, { age: 18 }, { age: 16 }], 3, '2018-09-12', {
-          price: 8,
-          modifiers: [
-            { adjustment: -10, unit: 'percentage', conditions: { maxAge: 25 } },
-            { adjustment: -50, unit: 'percentage', conditions: { maxAge: 18 } },
-            { adjustment: -25, unit: 'percentage', conditions: { maxAge: 16 } },
-          ],
-        }).format()).toBe(currency(7.2 + 4 + 4).format());
+        expect(rtbResult.prices[0]).toHaveProperty('total');
+        expect(rtbResult.prices[0].total.format()).toBe(currency(60 + 60 + 30 + 30).format());
+        expect(rtbResult.prices[0]).toHaveProperty('components.stay');
+        expect(rtbResult.prices[0].components.stay.length).toBe(2); // 2 days
+        expect(rtbResult.prices[0].components.stay[0]).toHaveProperty('date', '2018-01-03');
+        expect(rtbResult.prices[0].components.stay[0]).toHaveProperty('subtotal');
+        expect(rtbResult.prices[0].components.stay[0].subtotal.format()).toBe(currency(60 + 30).format());
+        expect(rtbResult.prices[0].components.stay[1]).toHaveProperty('date', '2018-01-04');
+        expect(rtbResult.prices[0].components.stay[1].subtotal.format()).toBe(currency(60 + 30).format());
+        expect(rtbResult.prices[0].components.stay[0].guests.length).toBe(2); // 2 people
+        expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('guestId', 'g1');
+        expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('ratePlanId', 'rpb');
+        expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('basePrice');
+        expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('modifier');
+        expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('adjustment', -50);
+        expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('unit', 'percentage');
+        expect(rtbResult.prices[0].components.stay[0].guests[0].modifier).toHaveProperty('conditions');
+        expect(rtbResult.prices[0].components.stay[0].guests[0].modifier.conditions).toHaveProperty('maxAge', 20);
+        expect(rtbResult.prices[0].components.stay[0].guests[0]).toHaveProperty('resultingPrice');
+        expect(rtbResult.prices[0].components.stay[0].guests[0].basePrice.format()).toBe(currency(60).format());
+        expect(rtbResult.prices[0].components.stay[0].guests[0].resultingPrice.format()).toBe(currency(30).format());
+        expect(rtbResult.prices[0].components.stay[0].guests[1]).toHaveProperty('guestId', 'g2');
+        expect(rtbResult.prices[0].components.stay[0].guests[1]).toHaveProperty('ratePlanId', 'rpb');
+        expect(rtbResult.prices[0].components.stay[0].guests[1]).toHaveProperty('basePrice');
+        expect(rtbResult.prices[0].components.stay[0].guests[1]).not.toHaveProperty('modifier');
+        expect(rtbResult.prices[0].components.stay[0].guests[1]).toHaveProperty('resultingPrice');
+        expect(rtbResult.prices[0].components.stay[0].guests[1].basePrice.format()).toBe(currency(60).format());
+        expect(rtbResult.prices[0].components.stay[0].guests[1].resultingPrice.format()).toBe(currency(60).format());
       });
     });
   });
