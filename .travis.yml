@@ -20,7 +20,7 @@ jobs:
     before_deploy: npm run build
     deploy:
       provider: npm
-      email: chadima.jiri@gmail.com
+      email: devops@windingtree.com
       skip_cleanup: true
       api_key: "$NPM_TOKEN"
       on:
@@ -28,4 +28,4 @@ jobs:
         tags: true
 env:
   global:
-    secure: yjqCUSBidsnuDAMyLybTzAcEpEOhnHZkIg3BNpZKCMhDUwE0k7lSwyy4sss7GreROxkLGMFkvy2JbgY/hplqRfV1AC4dIC155jS7riasvrkg9TIoJ3eMVj8zj5VLv8ZEmF6WLuFX8Z+pWOKYzyoRxrtNwkZ2lqb57bPBr8U74vrUWkUElaf6pMbnAsQaIgodvpWhSfmECBGtYrxLt6yzPD+rFuDFc3FJF1/qkvzEgnS2ierpvMyJ5Rm/xbDlIX4QgHHdMlkTg4CucNIm7iPhdG29W8LaolhY+SZYnVoEI1Xskxct/3CbjgJQ8YA+k42UFiCA8YfeRtCQiHKELybVCHcku4mXKGsUt3vL4MFG+B9e8LCHwqbmMNvjK8nrsMLfiAkRbxJCr2mWmUUP7zSHGT8p14l/uGV7xxinvqD3hjN7XasE/G5q9QEDX45QZa/t9W1vx/i+etDwnIzg+ed1FBcl64UtQLO58nwPwtr7CQWb6o5d3VYnXuDEyEUX+L+7MljXLu+E+bjYWhUQ5zPENkajnm7GwuDSaHxErcvRnXiytHHlbjZWSp1JpqK9XjysR540JOd0jwSZrMCLCSt29Z9sEihQoDTf423JUPx39lfxm/g9lAxNeMlx8VjBJJtOrXyeBb7a/4AC/rWgEy7j126hWdpuUB0ElliPGwQLs7k=
+    secure: dMJS4cgfcOr745/bWDhxBofNjTVSmqFEB5fHcBwon264lAsKF1g0upf+tMd5v7HYuumq6+FKgUCeJEdel17A5/4r4z5jX20Oh7iP628heRoYacHJRJfQjtfr9WKc9BreCZFibcHERKcreKjGHvfIQLZo+WUuI2yxyxoXcEuRUkjXssvkLfB5HjhyzXB80j4vh02lCvM5fBOrA1vhVBkPSwB7MHp1kZw+QCmrAww4VqnMt0zAVLuQk0tFNPY+3idYA3ecpd+r3Y9qrydmMsDYDelmDKAdKmR547NQUo6NmW66sp2x34JsacwkZdkB2nuqScj9PKkkp968Rb1o5Y7vFkROo4kdA8ArOQut/sEKQq0YbSbZSyYJrlKSAoaVpwppxtfdRkwg3PpLpER472494JUIiVHI7zYjXPSghSN++WvJG9X8nrrpizP6nsxv9+rUrTXFBNP24Zxs5HpqgMQ2mEpZHWCaa5CfppMtBmy9CudEkpuTGAuDkj2+gt94D5lH7/oTTSdya/yIBoj/mDTIVZVSkM6CHeyFsbwjJO1TQ9t4kZVWp8oq6M0We14qoPMdc9ZMMm9xKhdm2rY7k4HL/A0f46hfLLYJcoYjFavwAIJiGW6Z+syv6dENpcteaW0ZJry3a5FvMGtUtknjDEX+ZDf99xbVJoLEi4K3ZP9cQ48=
