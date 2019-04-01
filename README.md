@@ -1,5 +1,7 @@
 # Winding Tree Pricing algorithms
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/windingtree/wt-pricing-algorithms.svg)](https://greenkeeper.io/)
+
 Javascript implementation of pricing algorithms based on data stored in Winding Tree platform.
 
 ## Installation and usage
