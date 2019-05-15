@@ -87,6 +87,7 @@ export const selectApplicableModifiers = (modifiers, dateDayjs, lengthOfStay, nu
  * favour of a guest.
  */
 export const selectBestGuestModifier = (basePrice, modifiers, guestAge) => {
+  // set absolute adjustment based on basePrice
   modifiers.forEach(mod => mod.change = mod.unit === 'percentage' ? (mod.adjustment / 100) * basePrice : mod.adjustment);
   let selectedModifier = modifiers 
     .filter(mod => 'maxAge' in mod.conditions)
