@@ -86,36 +86,34 @@ export const selectApplicableModifiers = (modifiers, dateDayjs, lengthOfStay, nu
  * @return {Object} The modifier with the best rate in
  * favour of a guest.
  */
-export const selectBestGuestModifier = (basePrice, modifiers, age) => {
-  const ageModifiers = modifiers.filter(mod => mod.conditions.maxAge !== undefined);
-  const selectedAgeModifier = ageModifiers.reduce((best, current) => {
-    if (current.conditions.maxAge >= age && ( // guest is under the bar
-      !best || // no best has yet been setup
-      // current has a closer limit than the best
-      best.conditions.maxAge >= current.conditions.maxAge
-    )) {
-      const change = current.unit === 'percentage' ? (current.adjustment / 100) * basePrice : current.adjustment;
-      // always return pro-customer price for now
-      if (!best || change <= best.change) {
-        current.change = change;
-        return current;
-      }
-    }
-    return best;
-  }, undefined);
+export const selectBestGuestModifier = (basePrice, modifiers, guestAge) => {
+  modifiers.forEach(mod => mod.change = mod.unit === 'percentage' ? (mod.adjustment / 100) * basePrice : mod.adjustment);
+  let selectedModifier = modifiers 
+    .filter(mod => 'maxAge' in mod.conditions)
+    .reduce((best, current) => {
+      if (
+          current.conditions.maxAge >= guestAge // guest is under the bar
+            && ( 
+              !best // no best has yet been setup
+              || ( 
+                current.conditions.maxAge <= best.conditions.maxAge 
+                && current.change <= best.change 
+              )
+            )
+        ) {
+            return current;
+        } else {
+            return best;
+        }
+      }, undefined);
 
-  if (selectedAgeModifier) {
-    return selectedAgeModifier;
-  }
   // Fallback to a best offer, no age-specific modifier matched
-  const genericModifiers = modifiers
-    .filter(mod => mod.conditions && mod.conditions.maxAge === undefined)
-    .map((mod) => {
-      mod.change = mod.unit === 'percentage' ? (mod.adjustment / 100) * basePrice : mod.adjustment;
-      return mod;
-    })
-    .sort((a, b) => (a.change <= b.change ? -1 : 1));
-  return genericModifiers[0];
+  if (!selectedModifier) {
+      selectedModifier = modifiers
+        .filter(mod => mod.conditions && mod.conditions.maxAge === undefined)
+        .sort((a, b) => (a.change - b.change))[0];
+  }
+  return selectedModifier;
 };
 
 /**
